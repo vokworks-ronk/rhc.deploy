@@ -35,9 +35,9 @@
 
 | Purpose | Domain | Tenant ID | Status |
 |---------|--------|-----------|--------|
-| QA (External ID) | `rhc-qa.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| Prod (External ID) | `rhc-prod.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| Database (Workforce) | `rhc-db-core.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| QA (External ID) | `rhcqa.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| Prod (External ID) | `rhcprod.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| Database (Workforce) | `rhcdbcore.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
 
 ### New Subscriptions
 

@@ -13,7 +13,7 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 **Subscriptions to Create:**
 1. **QA Subscription** → `rhc-b2c-qa-sub` (for `rhc-b2c-qa.onmicrosoft.com`)
 2. **Production Subscription** → `rhc-b2c-prod-sub` (for `rhc-b2c-prod.onmicrosoft.com`)
-3. **Database Subscription** → `rhc-db-core-sub` (for `rhc-db-core.onmicrosoft.com`)
+3. **Database Subscription** → `rhc-db-core-sub` (for `rhcdbcore.onmicrosoft.com`)
 
 **Benefits:**
 - Cost isolation and tracking per environment
@@ -54,7 +54,7 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 |-------------------|--------|-----------------|---------------|--------|
 | `rhc-b2c-qa-sub` | `rhc-b2c-qa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
 | `rhc-b2c-prod-sub` | `rhc-b2c-prod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| `rhc-db-core-sub` | `rhc-db-core.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| `rhc-db-core-sub` | `rhcdbcore.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
 
 ---
 
@@ -132,7 +132,7 @@ Repeat the same process:
 
 Repeat for Database tenant:
 
-1. Switch to **Database tenant** (`rhc-db-core.onmicrosoft.com`)
+1. Switch to **Database tenant** (`rhcdbcore.onmicrosoft.com`)
 2. Navigate to **Subscriptions** → **Add**
 3. Choose offer type (same as above)
 4. **Subscription name:** `rhc-db-core-sub`
@@ -190,7 +190,7 @@ az account create \
 
 ```bash
 # Switch to Database tenant
-az login --tenant rhc-db-core.onmicrosoft.com
+az login --tenant rhcdbcore.onmicrosoft.com
 
 # Create subscription
 az account create \
@@ -366,7 +366,7 @@ az group create --name "test-rg" --location "eastus2"
 az group delete --name "test-rg" --yes --no-wait
 
 # Repeat for Database
-az login --tenant rhc-db-core.onmicrosoft.com
+az login --tenant rhcdbcore.onmicrosoft.com
 az account set --subscription "rhc-db-core-sub"
 az group create --name "test-rg" --location "eastus2"
 az group delete --name "test-rg" --yes --no-wait

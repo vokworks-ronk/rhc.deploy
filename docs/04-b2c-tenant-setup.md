@@ -8,7 +8,7 @@
 
 ## 📋 Overview
 
-This phase configures the QA tenant (`rhc-qa.onmicrosoft.com`) with Microsoft Entra External ID features:
+This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Entra External ID features:
 - User authentication flows for external users
 - Multi-factor authentication (MFA) enforcement
 - Invitation-only user provisioning

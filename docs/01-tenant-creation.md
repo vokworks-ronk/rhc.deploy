@@ -10,9 +10,9 @@
 
 This phase creates the three new Microsoft Entra tenants required for the multi-tenant architecture:
 
-1. **QA Tenant (External ID)** - `rhc-qa.onmicrosoft.com`
-2. **Production Tenant (External ID)** - `rhc-prod.onmicrosoft.com`
-3. **Database Tenant (Workforce)** - `rhc-db-core.onmicrosoft.com`
+1. **QA Tenant (External ID)** - `rhcqa.onmicrosoft.com`
+2. **Production Tenant (External ID)** - `rhcprod.onmicrosoft.com`
+3. **Database Tenant (Workforce)** - `rhcdbcore.onmicrosoft.com`
 
 > **Important Update:** As of May 1, 2025, Azure AD B2C is no longer available for new customers. We're using **Microsoft Entra External ID** instead, which is the modern replacement with the same core functionality plus enhanced features.
 
@@ -28,9 +28,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 - [ ] Have this checklist ready to fill in Tenant IDs after creation
 
 ### Tenant Creation
-- [ ] Create QA Tenant (`rhc-qa.onmicrosoft.com`) - Entra External ID
-- [ ] Create Production Tenant (`rhc-prod.onmicrosoft.com`) - Entra External ID
-- [ ] Create Database Tenant (`rhc-db-core.onmicrosoft.com`) - Workforce
+- [ ] Create QA Tenant (`rhcqa.onmicrosoft.com`) - Entra External ID
+- [ ] Create Production Tenant (`rhcprod.onmicrosoft.com`) - Entra External ID
+- [ ] Create Database Tenant (`rhcdbcore.onmicrosoft.com`) - Workforce
 
 ### Post-Creation Verification
 - [ ] Document all Tenant IDs (fill in table below)
@@ -44,9 +44,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 | Tenant Purpose | Domain Name | Tenant ID | Creation Date | Status |
 |----------------|-------------|-----------|---------------|--------|
-| QA (External ID) | `rhc-qa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| Production (External ID) | `rhc-prod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| Database (Workforce) | `rhc-db-core.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| QA (External ID) | `rhcqa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| Production (External ID) | `rhcprod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| Database (Workforce) | `rhcdbcore.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
 
 ---
 
@@ -80,11 +80,11 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 5. **Fill in Tenant Details**
    - **Organization name:** `RHC QA` or `RHC External ID QA`
-   - **Initial domain name:** `rhc-qa`
+   - **Initial domain name:** `rhcqa` ⚠️ **Must be alphanumeric only (no hyphens)**
    - **Country/Region:** `United States` (or your preferred region)
    - **Subscription:** Select your existing subscription (this is just for a small link resource)
    - **Resource group:** Create new or select existing (not critical - just for the link)
-   - **Note:** The domain will become `rhc-qa.onmicrosoft.com`
+   - **Note:** The domain will become `rhcqa.onmicrosoft.com`
 
 6. **Review + Create**
    - Review all details
@@ -130,10 +130,10 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 3. **Fill in Tenant Details**
    - **Organization name:** `RHC Production` or `RHC External ID Production`
-   - **Initial domain name:** `rhc-prod`
+   - **Initial domain name:** `rhcprod` ⚠️ **Must be alphanumeric only (no hyphens)**
    - **Country/Region:** `United States`
    - **Subscription:** Select existing
-   - **Note:** The domain will become `rhc-prod.onmicrosoft.com`
+   - **Note:** The domain will become `rhcprod.onmicrosoft.com`
 
 4. **Review + Create**
    - Review all details
@@ -170,9 +170,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 4. **Fill in Tenant Details**
    - **Organization name:** `RHC Database Core`
-   - **Initial domain name:** `rhc-db-core`
+   - **Initial domain name:** `rhcdbcore` ⚠️ **Must be alphanumeric only (no hyphens)**
    - **Country/Region:** `United States`
-   - **Note:** The domain will become `rhc-db-core.onmicrosoft.com`
+   - **Note:** The domain will become `rhcdbcore.onmicrosoft.com`
 
 5. **Review + Create**
    - Review all details
@@ -236,9 +236,9 @@ After creating all three tenants, verify:
 2. Click profile icon → **Switch directory**
 3. Confirm you see all tenants:
    - `recalibratehealthcare.com` ✅
-   - `rhc-b2c-qa.onmicrosoft.com` ✅
-   - `rhc-b2c-prod.onmicrosoft.com` ✅
-   - `rhc-db-core.onmicrosoft.com` ✅
+   - `rhcqa.onmicrosoft.com` ✅
+   - `rhcprod.onmicrosoft.com` ✅
+   - `rhcdbcore.onmicrosoft.com` ✅
    - (Plus your dev tenants)
 
 ### 2. Tenant IDs Recorded
@@ -327,9 +327,9 @@ After completing tenant creation, update `deployment-log.md`:
 **Completed by:** Ron
 
 ### Tenants Created
-- [x] QA Tenant: rhc-qa.onmicrosoft.com (Tenant ID: xxxxx)
-- [x] Production Tenant: rhc-prod.onmicrosoft.com (Tenant ID: xxxxx)
-- [x] Database Tenant: rhc-db-core.onmicrosoft.com (Tenant ID: xxxxx)
+- [x] QA Tenant: rhcqa.onmicrosoft.com (Tenant ID: xxxxx)
+- [x] Production Tenant: rhcprod.onmicrosoft.com (Tenant ID: xxxxx)
+- [x] Database Tenant: rhcdbcore.onmicrosoft.com (Tenant ID: xxxxx)
 
 **Tenant Type:** Microsoft Entra External ID (for QA/Prod) and Workforce (for Database)
 **Status:** ✅ Complete

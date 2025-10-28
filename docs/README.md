@@ -137,7 +137,7 @@ Set foundation for production deployment:
 
 ┌─────────────────────────────────────────────────────────────┐
 │               Database Tenant (NEW)                          │
-│              rhc-db-core.onmicrosoft.com                     │
+│              rhcdbcore.onmicrosoft.com                     │
 │                                                               │
 │  ┌───────────────────────────────────────────────┐          │
 │  │   QA SQL Server                                │          │

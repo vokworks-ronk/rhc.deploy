@@ -55,7 +55,7 @@ This document tracks all deployment activities, decisions, and issues encountere
   - Notes: _________________________
 
 - [ ] **Database Tenant**
-  - Domain: `rhc-db-core.onmicrosoft.com`
+  - Domain: `rhcdbcore.onmicrosoft.com`
   - Tenant ID: `_________________________`
   - Creation Date: `_______________`
   - Notes: _________________________
@@ -93,7 +93,7 @@ _Document lessons learned..._
 - [ ] **Database Subscription**
   - Name: `rhc-db-core-sub`
   - Subscription ID: `_________________________`
-  - Linked to: `rhc-db-core.onmicrosoft.com`
+  - Linked to: `rhcdbcore.onmicrosoft.com`
   - Notes: _________________________
 
 #### Billing Configuration

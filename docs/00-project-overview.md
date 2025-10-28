@@ -152,7 +152,7 @@
 > **Note:** As of May 1, 2025, Azure AD B2C is no longer available for new customers. We're using **Microsoft Entra External ID** instead, which is the modern replacement with enhanced features.
 
 #### **1. QA Tenant (External ID)**
-- **Domain:** `rhc-qa.onmicrosoft.com`
+- **Domain:** `rhcqa.onmicrosoft.com`
 - **Type:** Microsoft Entra External ID (or Workforce with External ID features)
 - **Purpose:** QA/testing environment for HP2 and SMX
 - **Custom Domains:** 
@@ -162,7 +162,7 @@
 - **Status:** TO BE CREATED
 
 #### **2. Production Tenant (External ID)**
-- **Domain:** `rhc-prod.onmicrosoft.com`
+- **Domain:** `rhcprod.onmicrosoft.com`
 - **Type:** Microsoft Entra External ID (or Workforce with External ID features)
 - **Purpose:** Production environment for HP2 and SMX
 - **Custom Domains:** 
@@ -172,7 +172,7 @@
 - **Status:** TO BE CREATED (after QA is stable)
 
 #### **3. Database Tenant**
-- **Domain:** `rhc-db-core.onmicrosoft.com`
+- **Domain:** `rhcdbcore.onmicrosoft.com`
 - **Type:** Microsoft Entra ID (Workforce)
 - **Purpose:** Isolated tenant for QA and Production databases
 - **Access:** Restricted to IT accounts and service principals ONLY
@@ -199,7 +199,7 @@
 
 **SQL Server:** `rhc-qa-sqlsvr.database.windows.net` (to be created)
 - **Location:** East US 2
-- **Tenant:** `rhc-db-core.onmicrosoft.com`
+- **Tenant:** `rhcdbcore.onmicrosoft.com`
 - **Resource Group:** `rhc-db-qa-rg`
 - **Tier:** Azure SQL Database (Standard S0: 10 DTUs)
 - **Authentication:** Managed Identity or Service Principal (SECURE)
@@ -305,7 +305,7 @@ All subscriptions will be linked to **central billing account** under existing O
 |--------|-------------------|---------|
 | `rhc-b2c-qa.onmicrosoft.com` | `rhc-b2c-qa-sub` | QA environment resources |
 | `rhc-b2c-prod.onmicrosoft.com` | `rhc-b2c-prod-sub` | Production environment resources |
-| `rhc-db-core.onmicrosoft.com` | `rhc-db-core-sub` | Database resources (QA & Prod) |
+| `rhcdbcore.onmicrosoft.com` | `rhc-db-core-sub` | Database resources (QA & Prod) |
 
 **Benefits:**
 - Cost isolation and tracking per environment

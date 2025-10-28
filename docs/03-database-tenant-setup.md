@@ -27,7 +27,7 @@ This phase sets up the isolated Database tenant with:
 ## 🎯 Checklist
 
 ### Pre-Configuration
-- [ ] Verify database tenant created (`rhc-db-core.onmicrosoft.com`)
+- [ ] Verify database tenant created (`rhcdbcore.onmicrosoft.com`)
 - [ ] Verify database subscription created (`rhc-db-core-sub`)
 - [ ] Document tenant ID and subscription ID
 
@@ -98,7 +98,7 @@ This phase sets up the isolated Database tenant with:
 
 1. **Switch to Database Tenant**
    - Click profile icon → Switch directory
-   - Select `rhc-db-core.onmicrosoft.com`
+   - Select `rhcdbcore.onmicrosoft.com`
 
 2. **Create QA Resource Group**
    - Search for "Resource groups"
@@ -119,7 +119,7 @@ This phase sets up the isolated Database tenant with:
 
 ```bash
 # Login to database tenant
-az login --tenant rhc-db-core.onmicrosoft.com
+az login --tenant rhcdbcore.onmicrosoft.com
 
 # Set subscription context
 az account set --subscription "rhc-db-core-sub"
@@ -144,7 +144,7 @@ az group list --output table
 
 ```powershell
 # Connect to Azure
-Connect-AzAccount -Tenant "rhc-db-core.onmicrosoft.com"
+Connect-AzAccount -Tenant "rhcdbcore.onmicrosoft.com"
 
 # Set subscription context
 Set-AzContext -Subscription "rhc-db-core-sub"
@@ -622,7 +622,7 @@ sqlcmd -S rhc-qa-sqlsvr.database.windows.net -d corp_db -U sqladmin -P password
 
 ```bash
 # Switch to database tenant
-az login --tenant rhc-db-core.onmicrosoft.com
+az login --tenant rhcdbcore.onmicrosoft.com
 az account set --subscription "rhc-db-core-sub"
 
 # List all resources in QA resource group
