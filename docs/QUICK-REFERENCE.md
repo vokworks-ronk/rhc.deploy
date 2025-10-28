@@ -31,18 +31,20 @@
 
 ### New Tenants
 
+> **Note:** Using Microsoft Entra External ID instead of Azure AD B2C (Microsoft's modern replacement as of May 2025)
+
 | Purpose | Domain | Tenant ID | Status |
 |---------|--------|-----------|--------|
-| B2C QA | `rhc-b2c-qa.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| B2C Prod | `rhc-b2c-prod.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| Database | `rhc-db-core.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| QA (External ID) | `rhc-qa.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| Prod (External ID) | `rhc-prod.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
+| Database (Workforce) | `rhc-db-core.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
 
 ### New Subscriptions
 
 | Name | Purpose | Status |
 |------|---------|--------|
-| `rhc-b2c-qa-sub` | QA environment resources | ⬜ Create in Phase 2 |
-| `rhc-b2c-prod-sub` | Production resources (future) | ⬜ Create in Phase 2 |
+| `rhc-qa-sub` | QA environment resources | ⬜ Create in Phase 2 |
+| `rhc-prod-sub` | Production resources (future) | ⬜ Create in Phase 2 |
 | `rhc-db-core-sub` | Database resources | ⬜ Create in Phase 2 |
 
 ### QA Databases
@@ -129,9 +131,9 @@
 ### Tenant IDs
 ```
 Back Office:    ed01df5d-6b39-45f8-82ae-36b88e5daae0
-Dev B2C:        cd21a3bf-622c-4725-8da7-2f8b9d265d14
-QA B2C:         ___________________________________
-Prod B2C:       ___________________________________
+Dev (smx25dev): cd21a3bf-622c-4725-8da7-2f8b9d265d14
+QA:             ___________________________________
+Prod:           ___________________________________
 Database:       ___________________________________
 ```
 
@@ -142,7 +144,7 @@ Production:     ___________________________________
 Database:       ___________________________________
 ```
 
-### Application IDs (B2C)
+### Application IDs (External ID)
 ```
 HP2 QA:         ___________________________________
 SMX QA:         ___________________________________

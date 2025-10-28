@@ -10,9 +10,11 @@
 
 This phase creates the three new Microsoft Entra tenants required for the multi-tenant architecture:
 
-1. **B2C QA Tenant** - `rhc-b2c-qa.onmicrosoft.com`
-2. **B2C Production Tenant** - `rhc-b2c-prod.onmicrosoft.com`
-3. **Database Tenant** - `rhc-db-core.onmicrosoft.com`
+1. **QA Tenant (External ID)** - `rhc-qa.onmicrosoft.com`
+2. **Production Tenant (External ID)** - `rhc-prod.onmicrosoft.com`
+3. **Database Tenant (Workforce)** - `rhc-db-core.onmicrosoft.com`
+
+> **Important Update:** As of May 1, 2025, Azure AD B2C is no longer available for new customers. We're using **Microsoft Entra External ID** instead, which is the modern replacement with the same core functionality plus enhanced features.
 
 ⚠️ **IMPORTANT:** Tenant creation **MUST** be done manually via Azure Portal. There is no supported API, CLI, or PowerShell method to create new Entra tenants. Post-creation configuration can be automated.
 
@@ -26,9 +28,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 - [ ] Have this checklist ready to fill in Tenant IDs after creation
 
 ### Tenant Creation
-- [ ] Create B2C QA Tenant (`rhc-b2c-qa.onmicrosoft.com`)
-- [ ] Create B2C Production Tenant (`rhc-b2c-prod.onmicrosoft.com`)
-- [ ] Create Database Tenant (`rhc-db-core.onmicrosoft.com`)
+- [ ] Create QA Tenant (`rhc-qa.onmicrosoft.com`) - Entra External ID
+- [ ] Create Production Tenant (`rhc-prod.onmicrosoft.com`) - Entra External ID
+- [ ] Create Database Tenant (`rhc-db-core.onmicrosoft.com`) - Workforce
 
 ### Post-Creation Verification
 - [ ] Document all Tenant IDs (fill in table below)
@@ -42,15 +44,15 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 | Tenant Purpose | Domain Name | Tenant ID | Creation Date | Status |
 |----------------|-------------|-----------|---------------|--------|
-| B2C QA | `rhc-b2c-qa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| B2C Production | `rhc-b2c-prod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| Database Core | `rhc-db-core.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| QA (External ID) | `rhc-qa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| Production (External ID) | `rhc-prod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| Database (Workforce) | `rhc-db-core.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
 
 ---
 
 ## 🔧 Step-by-Step Instructions
 
-### 1. Create B2C QA Tenant
+### 1. Create QA Tenant (External ID)
 
 #### Via Azure Portal
 
@@ -58,42 +60,62 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
    - Go to: https://portal.azure.com
    - Ensure you're in your main tenant (`recalibratehealthcare.com`)
 
-2. **Start Tenant Creation**
-   - Click **"Create a resource"**
-   - Search for: **"Azure Active Directory B2C"** or **"Entra ID B2C"**
-   - Click **"Create"**
+2. **Navigate to Microsoft Entra ID**
+   - In the search bar at top, search for: **"Microsoft Entra ID"** or **"Entra"**
+   - Click on **"Microsoft Entra ID"**
 
-3. **Choose Creation Type**
-   - Select: **"Create a new Azure AD B2C Tenant"**
-   - Click **"Create"**
+3. **Start Tenant Creation**
+   - Look for **"Manage tenants"** button at the top of the page
+   - OR click the **"+ Create"** button
+   - OR in the Overview page, look for options to manage or create tenants
 
-4. **Fill in Tenant Details**
-   - **Organization name:** `RHC B2C QA`
-   - **Initial domain name:** `rhc-b2c-qa`
+4. **Choose Tenant Type**
+   You should see options like:
+   - **Microsoft Entra ID** (Workforce)
+   - **Microsoft Entra External ID** (for customers/external users) ← **SELECT THIS**
+   
+   **Select:** "Microsoft Entra External ID" (if available)
+   
+   > **Note:** If you don't see "External ID" as an option, select "Microsoft Entra ID" (Workforce) and we'll enable External ID features after creation.
+
+5. **Fill in Tenant Details**
+   - **Organization name:** `RHC QA` or `RHC External ID QA`
+   - **Initial domain name:** `rhc-qa`
    - **Country/Region:** `United States` (or your preferred region)
-   - **Note:** The domain will become `rhc-b2c-qa.onmicrosoft.com`
+   - **Subscription:** Select your existing subscription (this is just for a small link resource)
+   - **Resource group:** Create new or select existing (not critical - just for the link)
+   - **Note:** The domain will become `rhc-qa.onmicrosoft.com`
 
-5. **Review + Create**
+6. **Review + Create**
    - Review all details
    - Click **"Create"**
    - ⏳ Wait 2-5 minutes for tenant creation
 
-6. **Verify Creation**
+7. **Verify Creation**
    - You'll see a notification: "Your new tenant is ready"
    - Click **"Go to tenant"** or switch directories manually
 
-7. **Record Tenant ID**
+8. **Record Tenant ID**
    - In the new tenant, go to **Microsoft Entra ID** → **Overview**
    - Copy the **Tenant ID** (GUID)
    - Fill it into the table above
 
-8. **Verify Global Admin Access**
-   - Check that you (Ron) are listed as Global Administrator
-   - Go to **Microsoft Entra ID** → **Roles and administrators** → **Global Administrator**
+9. **Verify Tenant Type**
+   - Check if External ID features are available
+   - Look for "External Identities" or similar in the left menu
+   - If not available, we'll enable it in Phase 4
+
+10. **Verify Global Admin Access**
+    - Check that you (Ron) are listed as Global Administrator
+    - Go to **Roles and administrators** → **Global Administrator**
+
+11. **Switch Back to Main Tenant**
+    - Click your profile icon → **Switch directory**
+    - Select `recalibratehealthcare.com`
 
 ---
 
-### 2. Create B2C Production Tenant
+### 2. Create Production Tenant (External ID)
 
 #### Via Azure Portal
 
@@ -101,31 +123,30 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
    - Click your profile icon → **Switch directory**
    - Select `recalibratehealthcare.com`
 
-2. **Start Tenant Creation**
-   - Click **"Create a resource"**
-   - Search for: **"Azure Active Directory B2C"**
-   - Click **"Create"**
+2. **Repeat the Process**
+   - Navigate to **Microsoft Entra ID**
+   - Click **"Manage tenants"** → **"+ Create"**
+   - Select **"Microsoft Entra External ID"** (or Workforce if External ID not available)
 
-3. **Choose Creation Type**
-   - Select: **"Create a new Azure AD B2C Tenant"**
-   - Click **"Create"**
-
-4. **Fill in Tenant Details**
-   - **Organization name:** `RHC B2C Production`
-   - **Initial domain name:** `rhc-b2c-prod`
+3. **Fill in Tenant Details**
+   - **Organization name:** `RHC Production` or `RHC External ID Production`
+   - **Initial domain name:** `rhc-prod`
    - **Country/Region:** `United States`
-   - **Note:** The domain will become `rhc-b2c-prod.onmicrosoft.com`
+   - **Subscription:** Select existing
+   - **Note:** The domain will become `rhc-prod.onmicrosoft.com`
 
-5. **Review + Create**
+4. **Review + Create**
    - Review all details
    - Click **"Create"**
    - ⏳ Wait 2-5 minutes
 
-6. **Verify Creation**
+5. **Verify Creation**
    - Click **"Go to tenant"** when ready
    - Navigate to **Microsoft Entra ID** → **Overview**
    - Copy the **Tenant ID**
    - Fill it into the table above
+
+6. **Switch Back to Main Tenant**
 
 ---
 
@@ -133,20 +154,19 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 #### Via Azure Portal
 
-⚠️ **IMPORTANT:** This is a **Workforce tenant**, NOT a B2C tenant. Different creation process.
+⚠️ **IMPORTANT:** This is a **Workforce tenant**, NOT an External ID tenant. Different creation process.
 
 1. **Switch Back to Main Tenant**
    - Click your profile icon → **Switch directory**
    - Select `recalibratehealthcare.com`
 
 2. **Start Tenant Creation**
-   - Click **"Create a resource"**
-   - Search for: **"Microsoft Entra ID"** or **"Azure Active Directory"**
-   - Click **"Create"** (NOT "Create a B2C tenant")
+   - Navigate to **Microsoft Entra ID**
+   - Click **"Manage tenants"** → **"+ Create"**
 
 3. **Choose Tenant Type**
-   - Select: **"Azure Active Directory"** (Workforce tenant)
-   - **Do NOT select B2C**
+   - Select: **"Microsoft Entra ID"** (Workforce tenant)
+   - **Do NOT select External ID for this one**
 
 4. **Fill in Tenant Details**
    - **Organization name:** `RHC Database Core`
@@ -166,8 +186,10 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
    - Fill it into the table above
 
 7. **Verify Tenant Type**
-   - Confirm this is a **Workforce tenant** (not B2C)
-   - You should NOT see B2C-specific features
+   - Confirm this is a **Workforce tenant** (not External ID)
+   - Should NOT have External ID or B2C-specific features
+
+8. **Switch Back to Main Tenant**
 
 ---
 
@@ -235,9 +257,9 @@ For each new tenant:
 
 ### 4. Tenant Types Correct
 
-- [ ] B2C QA = Azure AD B2C tenant
-- [ ] B2C Prod = Azure AD B2C tenant
-- [ ] Database Core = Azure AD (Workforce) tenant
+- [ ] QA = Microsoft Entra External ID (or Workforce with External ID features)
+- [ ] Production = Microsoft Entra External ID (or Workforce with External ID features)
+- [ ] Database Core = Microsoft Entra ID (Workforce) tenant
 
 ---
 
@@ -281,16 +303,16 @@ az rest --method get --url "https://graph.microsoft.com/v1.0/organization"
 After completing this phase:
 
 ✅ **3 New Tenants Created:**
-- B2C QA Tenant for QA environment
-- B2C Production Tenant for production environment
-- Database Tenant for isolated SQL resources
+- QA Tenant (External ID) for QA environment
+- Production Tenant (External ID) for production environment  
+- Database Tenant (Workforce) for isolated SQL resources
 
 ✅ **Admin Access Configured:**
 - You have Global Administrator access to all tenants
 
 ✅ **Foundation Ready:**
 - Ready to create subscriptions in Phase 2
-- Ready to configure B2C features in Phase 4
+- Ready to configure External ID features in Phase 4
 - Ready to deploy databases in Phase 3
 
 ---
@@ -300,18 +322,19 @@ After completing this phase:
 After completing tenant creation, update `deployment-log.md`:
 
 ```markdown
-## 2025-10-27 - Phase 1: Tenant Creation
+## 2025-10-28 - Phase 1: Tenant Creation
 
 **Completed by:** Ron
 
 ### Tenants Created
-- [x] B2C QA Tenant: rhc-b2c-qa.onmicrosoft.com (Tenant ID: xxxxx)
-- [x] B2C Production Tenant: rhc-b2c-prod.onmicrosoft.com (Tenant ID: xxxxx)
+- [x] QA Tenant: rhc-qa.onmicrosoft.com (Tenant ID: xxxxx)
+- [x] Production Tenant: rhc-prod.onmicrosoft.com (Tenant ID: xxxxx)
 - [x] Database Tenant: rhc-db-core.onmicrosoft.com (Tenant ID: xxxxx)
 
+**Tenant Type:** Microsoft Entra External ID (for QA/Prod) and Workforce (for Database)
 **Status:** ✅ Complete
 **Issues:** None
-**Notes:** All tenants created successfully, Global Admin access verified
+**Notes:** Migrated from Azure AD B2C to Microsoft Entra External ID per Microsoft's direction
 ```
 
 ---

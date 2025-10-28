@@ -1,26 +1,28 @@
-# 🔐 Phase 4: B2C Tenant Configuration
+# 🔐 Phase 4: External ID Tenant Configuration
 
 **Status:** ⏳ Waiting for Phase 1  
-**Prerequisites:** B2C QA tenant created  
+**Prerequisites:** QA and Production tenants created  
 **Estimated Time:** 60-90 minutes
 
 ---
 
 ## 📋 Overview
 
-This phase configures the B2C QA tenant (`rhc-b2c-qa.onmicrosoft.com`) with:
-- User flows for sign-up and sign-in
+This phase configures the QA tenant (`rhc-qa.onmicrosoft.com`) with Microsoft Entra External ID features:
+- User authentication flows for external users
 - Multi-factor authentication (MFA) enforcement
 - Invitation-only user provisioning
 - Custom branding (optional)
 - Application registrations for HP2 and SMX
 - API permissions and scopes
 
+> **Note:** We're using **Microsoft Entra External ID**, which replaces Azure AD B2C and provides enhanced features for external user management.
+
 **Authentication Requirements:**
 - ✅ Email/password authentication
 - ✅ MFA required for all users
 - ✅ Invitation-only sign-up (no self-service)
-- ❌ No social identity providers
+- ❌ No social identity providers (initially)
 - ❌ No SAML/SSO (initially)
 
 ---

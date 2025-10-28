@@ -149,24 +149,26 @@
 
 ### New Tenants to Create
 
-#### **1. B2C QA Tenant**
-- **Domain:** `rhc-b2c-qa.onmicrosoft.com`
-- **Type:** Microsoft Entra ID B2C
+> **Note:** As of May 1, 2025, Azure AD B2C is no longer available for new customers. We're using **Microsoft Entra External ID** instead, which is the modern replacement with enhanced features.
+
+#### **1. QA Tenant (External ID)**
+- **Domain:** `rhc-qa.onmicrosoft.com`
+- **Type:** Microsoft Entra External ID (or Workforce with External ID features)
 - **Purpose:** QA/testing environment for HP2 and SMX
 - **Custom Domains:** 
   - `hp2-qa.recalibratex.net`
   - `smx-qa.recalibratex.net`
-- **Access:** External identities only (B2C users)
+- **Access:** External identities (customer users)
 - **Status:** TO BE CREATED
 
-#### **2. B2C Production Tenant**
-- **Domain:** `rhc-b2c-prod.onmicrosoft.com`
-- **Type:** Microsoft Entra ID B2C
+#### **2. Production Tenant (External ID)**
+- **Domain:** `rhc-prod.onmicrosoft.com`
+- **Type:** Microsoft Entra External ID (or Workforce with External ID features)
 - **Purpose:** Production environment for HP2 and SMX
 - **Custom Domains:** 
   - `hp2.recalibratex.net`
   - `smx.recalibratex.net`
-- **Access:** External identities only (B2C users)
+- **Access:** External identities (customer users)
 - **Status:** TO BE CREATED (after QA is stable)
 
 #### **3. Database Tenant**
@@ -174,7 +176,7 @@
 - **Type:** Microsoft Entra ID (Workforce)
 - **Purpose:** Isolated tenant for QA and Production databases
 - **Access:** Restricted to IT accounts and service principals ONLY
-- **Security:** No B2C identities or app registrations permitted
+- **Security:** No external identities or app registrations permitted
 - **Status:** TO BE CREATED
 
 ### Target QA Environment
