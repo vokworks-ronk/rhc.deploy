@@ -141,7 +141,53 @@ Before creating SQL Servers, we'll create security groups to manage administrato
 - Dave Tuck: `dtuck@celerasys.com`
 - Bruce Scott: `bruce.scott@resolutionx.ai`
 
-### Via Azure Portal
+---
+
+### ⚠️ Important: External Users (Guest Accounts)
+
+Since the Database tenant is isolated, all admin users will be **B2B guest users** from their home tenants.
+
+**What this means:**
+- Users authenticate with their **home credentials** (e.g., `ron@recalibratehealthcare.com`)
+- Azure recognizes them as **guest users** in the Database tenant
+- Their UPN will appear as: `ron_recalibratehealthcare.com#EXT#@rhcdb.onmicrosoft.com`
+- They can still connect to SQL Servers with their normal credentials via Entra authentication
+
+**Two approaches:**
+
+**Option A: Invite users as guests first (Recommended for production)**
+1. Invite each user via Azure Portal or B2B invitation API
+2. Wait for them to accept invitation
+3. Add their guest accounts to security groups
+4. They can now connect to SQL Servers
+
+**Option B: Start with one admin, add others later (Faster for initial setup)**
+1. Create security groups with just yourself (Ron)
+2. Set up SQL Servers and databases
+3. Invite other admins when ready
+4. Add them to groups after they accept
+
+**For this guide, we'll use Option B** - start with Ron only, add others later.
+
+---
+
+### 1.1: Check Your Guest Account in Database Tenant
+
+```powershell
+# Verify you're logged into Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+
+# Check your account details
+az ad signed-in-user show --query "{Name:displayName, UPN:userPrincipalName, ID:id}" -o json
+
+# Expected UPN format: yourname_domain.com#EXT#@rhcdb.onmicrosoft.com
+```
+
+Save your **Object ID** - you'll need it to add yourself to groups.
+
+---
+
+### 1.2: Create Security Groups via Azure Portal
 
 1. **Switch to Database Tenant**
    - Click profile icon → Switch directory
@@ -156,12 +202,11 @@ Before creating SQL Servers, we'll create security groups to manage administrato
    - **Group type:** Security
    - **Group name:** `db-lam-sqlsvr-admin`
    - **Group description:** "Administrators for LAM SQL Server"
-   - **Owners:** Add yourself (Ron)
+   - **Owners:** Leave default (you'll be added automatically)
    - **Members:** Click "No members selected"
-     - Search and add: `ron@recalibratehealthcare.com`
-     - Search and add: `mmcguirk@celerasys.com`
-     - Search and add: `dtuck@celerasys.com`
-     - Search and add: `bruce.scott@resolutionx.ai`
+     - Search for your guest account (e.g., `ron_recalibratehealthcare.com#EXT#`)
+     - **Note:** You won't find `ron@recalibratehealthcare.com` directly - it's your guest UPN
+     - Add yourself
    - Click **"Create"**
 
 4. **Create QA Admin Group**
@@ -169,8 +214,7 @@ Before creating SQL Servers, we'll create security groups to manage administrato
    - **Group type:** Security
    - **Group name:** `db-qa-sqlsvr-admin`
    - **Group description:** "Administrators for QA SQL Server"
-   - **Owners:** Ron
-   - **Members:** Same 4 admins as above
+   - **Members:** Add yourself (your guest account)
    - Click **"Create"**
 
 5. **Create Production Admin Group**
@@ -178,83 +222,66 @@ Before creating SQL Servers, we'll create security groups to manage administrato
    - **Group type:** Security
    - **Group name:** `db-prod-sqlsvr-admin`
    - **Group description:** "Administrators for Production SQL Server"
-   - **Owners:** Ron
-   - **Members:** Same 4 admins as above
+   - **Members:** Add yourself (your guest account)
    - Click **"Create"**
 
-### Via Azure CLI
+### 1.3: Create Security Groups via Azure CLI (PowerShell)
 
-```bash
-# Ensure logged into database tenant
+**Quick setup with just yourself (Ron) as admin:**
+
+```powershell
+# Ensure you're in Database tenant
 az login --tenant rhcdb.onmicrosoft.com
-az account set --subscription "subs-rhcdb"
 
-# Define admin members
-ADMINS=(
-  "ron@recalibratehealthcare.com"
-  "mmcguirk@celerasys.com"
-  "dtuck@celerasys.com"
-  "bruce.scott@resolutionx.ai"
-)
+# Get your guest account Object ID
+$RonId = az ad signed-in-user show --query id -o tsv
+Write-Host "Your Object ID: $RonId" -ForegroundColor Cyan
 
 # Create LAM admin group
-az ad group create \
-  --display-name "db-lam-sqlsvr-admin" \
-  --mail-nickname "db-lam-sqlsvr-admin" \
-  --description "Administrators for LAM SQL Server" \
-  --security-enabled true
-
-# Add owner (Ron)
-az ad group owner add \
-  --group "db-lam-sqlsvr-admin" \
-  --owner-object-id $(az ad user show --id "ron@recalibratehealthcare.com" --query id -o tsv)
-
-# Add members
-for ADMIN in "${ADMINS[@]}"; do
-  az ad group member add \
-    --group "db-lam-sqlsvr-admin" \
-    --member-id $(az ad user show --id "$ADMIN" --query id -o tsv)
-done
+az ad group create `
+  --display-name "db-lam-sqlsvr-admin" `
+  --mail-nickname "db-lam-sqlsvr-admin" `
+  --description "Administrators for LAM SQL Server"
 
 # Create QA admin group
-az ad group create \
-  --display-name "db-qa-sqlsvr-admin" \
-  --mail-nickname "db-qa-sqlsvr-admin" \
-  --description "Administrators for QA SQL Server" \
-  --security-enabled true
-
-az ad group owner add \
-  --group "db-qa-sqlsvr-admin" \
-  --owner-object-id $(az ad user show --id "ron@recalibratehealthcare.com" --query id -o tsv)
-
-for ADMIN in "${ADMINS[@]}"; do
-  az ad group member add \
-    --group "db-qa-sqlsvr-admin" \
-    --member-id $(az ad user show --id "$ADMIN" --query id -o tsv)
-done
+az ad group create `
+  --display-name "db-qa-sqlsvr-admin" `
+  --mail-nickname "db-qa-sqlsvr-admin" `
+  --description "Administrators for QA SQL Server"
 
 # Create Production admin group
-az ad group create \
-  --display-name "db-prod-sqlsvr-admin" \
-  --mail-nickname "db-prod-sqlsvr-admin" \
-  --description "Administrators for Production SQL Server" \
-  --security-enabled true
+az ad group create `
+  --display-name "db-prod-sqlsvr-admin" `
+  --mail-nickname "db-prod-sqlsvr-admin" `
+  --description "Administrators for Production SQL Server"
 
-az ad group owner add \
-  --group "db-prod-sqlsvr-admin" \
-  --owner-object-id $(az ad user show --id "ron@recalibratehealthcare.com" --query id -o tsv)
+# Add yourself to all three groups
+az ad group member add --group "db-lam-sqlsvr-admin" --member-id $RonId
+az ad group member add --group "db-qa-sqlsvr-admin" --member-id $RonId
+az ad group member add --group "db-prod-sqlsvr-admin" --member-id $RonId
 
-for ADMIN in "${ADMINS[@]}"; do
-  az ad group member add \
-    --group "db-prod-sqlsvr-admin" \
-    --member-id $(az ad user show --id "$ADMIN" --query id -o tsv)
-done
+Write-Host "`n✅ Created 3 security groups and added Ron as admin" -ForegroundColor Green
 
 # Verify groups created
-az ad group list --filter "startswith(displayName,'db-')" --output table
+Write-Host "`nVerifying security groups..." -ForegroundColor Cyan
+az ad group list | jq -r '.[] | select(.displayName | startswith("db-")) | "\(.displayName)\t\(.id)"'
+
+# Verify members
+Write-Host "`nLAM Group Members:" -ForegroundColor Cyan
+az ad group member list --group "db-lam-sqlsvr-admin" --query "[].{Name:displayName, UPN:userPrincipalName}" -o table
+
+Write-Host "`nQA Group Members:" -ForegroundColor Cyan
+az ad group member list --group "db-qa-sqlsvr-admin" --query "[].{Name:displayName, UPN:userPrincipalName}" -o table
+
+Write-Host "`nProduction Group Members:" -ForegroundColor Cyan
+az ad group member list --group "db-prod-sqlsvr-admin" --query "[].{Name:displayName, UPN:userPrincipalName}" -o table
 ```
 
-### Via PowerShell
+---
+
+### Via PowerShell (Az.Resources Module)
+
+If you have the Az.Resources PowerShell module installed:
 
 ```powershell
 # Connect to database tenant
@@ -309,23 +336,6 @@ foreach ($Admin in $Admins) {
 Get-AzADGroup -DisplayNameStartsWith "db-" | Format-Table DisplayName, Id
 ```
 
-### Verify Group Creation
-
-```bash
-# List all three groups
-az ad group list --filter "startswith(displayName,'db-')" --output table
-
-# View specific group details with members
-GROUP_NAME="db-lam-sqlsvr-admin"
-
-echo "Group: $GROUP_NAME"
-echo "Object ID:"
-az ad group show --group "$GROUP_NAME" --query id -o tsv
-
-echo "Members:"
-az ad group member list --group "$GROUP_NAME" --query "[].userPrincipalName" -o tsv
-```
-
 ---
 
 ## 🔧 Step 2: Create Resource Groups
@@ -360,37 +370,6 @@ az ad group member list --group "$GROUP_NAME" --query "[].userPrincipalName" -o 
    - **Region:** `East US 2`
    - **Tags:** `Environment=Production`, `Purpose=Database`
    - Click **"Review + create"** → **"Create"**
-
-### Via Azure CLI
-
-```bash
-# Login to database tenant
-az login --tenant rhcdb.onmicrosoft.com
-
-# Set subscription context
-az account set --subscription "subs-rhcdb"
-
-# Create LAM resource group
-az group create \
-  --name "db-lam-rg" \
-  --location "eastus2" \
-  --tags Environment=LAM Purpose=Database Project=RHC
-
-# Create QA resource group
-az group create \
-  --name "db-qa-rg" \
-  --location "eastus2" \
-  --tags Environment=QA Purpose=Database Project=RHC
-
-# Create Production resource group
-az group create \
-  --name "db-prod-rg" \
-  --location "eastus2" \
-  --tags Environment=Production Purpose=Database Project=RHC
-
-# Verify
-az group list --output table
-```
 
 ### Via PowerShell
 
@@ -570,78 +549,6 @@ Repeat for Production:
 
 ---
 
-### Via Azure CLI (All Three Servers)
-
-```bash
-# Ensure you're logged into database tenant
-az login --tenant rhcdb.onmicrosoft.com
-az account set --subscription "subs-rhcdb"
-
-# Get your user object ID for Entra admin
-USER_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
-USER_EMAIL=$(az ad signed-in-user show --query userPrincipalName -o tsv)
-
-# Get security group object IDs
-LAM_ADMIN_GROUP_ID=$(az ad group show --group "db-lam-sqlsvr-admin" --query id -o tsv)
-QA_ADMIN_GROUP_ID=$(az ad group show --group "db-qa-sqlsvr-admin" --query id -o tsv)
-PROD_ADMIN_GROUP_ID=$(az ad group show --group "db-prod-sqlsvr-admin" --query id -o tsv)
-
-# Get security group object IDs
-LAM_ADMIN_GROUP_ID=$(az ad group show --group "db-lam-sqlsvr-admin" --query id -o tsv)
-QA_ADMIN_GROUP_ID=$(az ad group show --group "db-qa-sqlsvr-admin" --query id -o tsv)
-PROD_ADMIN_GROUP_ID=$(az ad group show --group "db-prod-sqlsvr-admin" --query id -o tsv)
-
-# Create LAM SQL Server
-az sql server create \
-  --name "lam-sqlsvr" \
-  --resource-group "db-lam-rg" \
-  --location "eastus2" \
-  --admin-user "sqlAdminNewGroot" \
-  --admin-password "IAmNewGroot!" \
-  --identity-type SystemAssigned \
-  --external-admin-principal-type Group \
-  --external-admin-name "db-lam-sqlsvr-admin" \
-  --external-admin-sid "$LAM_ADMIN_GROUP_ID"
-
-# Enable Entra-only authentication (disables SQL auth)
-az sql server ad-only-auth enable \
-  --resource-group "db-lam-rg" \
-  --name "lam-sqlsvr"
-
-# Create QA SQL Server  
-az sql server create \
-  --name "qa-sqlsvr" \
-  --resource-group "db-qa-rg" \
-  --location "eastus2" \
-  --admin-user "sqlAdminNewGroot" \
-  --admin-password "IAmNewGroot!" \
-  --identity-type SystemAssigned \
-  --external-admin-principal-type Group \
-  --external-admin-name "db-qa-sqlsvr-admin" \
-  --external-admin-sid "$QA_ADMIN_GROUP_ID"
-
-# Enable Entra-only authentication (disables SQL auth)
-az sql server ad-only-auth enable \
-  --resource-group "db-qa-rg" \
-  --name "qa-sqlsvr"
-
-# Create Production SQL Server
-az sql server create \
-  --name "prod-sqlsvr" \
-  --resource-group "db-prod-rg" \
-  --location "eastus2" \
-  --admin-user "sqlAdminNewGroot" \
-  --admin-password "IAmNewGroot!" \
-  --identity-type SystemAssigned \
-  --external-admin-principal-type Group \
-  --external-admin-name "db-prod-sqlsvr-admin" \
-  --external-admin-sid "$PROD_ADMIN_GROUP_ID"
-
-# Enable Entra-only authentication (disables SQL auth)
-az sql server ad-only-auth enable \
-  --resource-group "db-prod-rg" \
-  --name "prod-sqlsvr"
-
 # Configure firewall - Allow Azure services
 az sql server firewall-rule create \
   --server "lam-sqlsvr" -g "db-lam-rg" \
@@ -699,21 +606,6 @@ New-AzSqlServerFirewallRule `
 4. **Tags:** Environment=LAM
 5. **Review + create** → **Create**
 
-#### Via Azure CLI
-
-```bash
-# Create lam_db
-az sql db create \
-  --resource-group "db-lam-rg" \
-  --server "lam-sqlsvr" \
-  --name "lam_db" \
-  --edition "Standard" \
-  --capacity 10 \
-  --max-size 250GB \
-  --backup-storage-redundancy "Local" \
-  --tags Environment=LAM Purpose=DevTesting Project=RHC
-```
-
 ---
 
 ### 3.2: Create QA Databases
@@ -731,110 +623,19 @@ az sql db create \
 4. **Tags:** Environment=QA, Purpose=Corporate
 5. **Review + create** → **Create**
 
-#### Via Azure CLI
-
-```bash
-# Create qa_corp_db
-az sql db create \
-  --resource-group "db-qa-rg" \
-  --server "qa-sqlsvr" \
-  --name "qa_corp_db" \
-  --edition "Standard" \
-  --capacity 10 \
-  --max-size 250GB \
-  --backup-storage-redundancy "Local" \
-  --tags Environment=QA Purpose=Corporate Project=RHC
-```
-
 ---
 
 #### Create qa_hm2_db
 
-Repeat for the HM2 application database:
-
-#### Via Azure CLI
-
-```bash
-# Create qa_hm2_db
-az sql db create \
-  --resource-group "db-qa-rg" \
-  --server "qa-sqlsvr" \
-  --name "qa_hm2_db" \
-  --edition "Standard" \
-  --capacity 10 \
-  --max-size 250GB \
-  --backup-storage-redundancy "Local" \
-  --tags Environment=QA Purpose=HM2 Project=RHC
-```
+Repeat for the HM2 application database in Azure Portal with similar settings.
 
 ---
 
 ### 3.3: Create Production Databases
 
-#### Create prod_corp_db
+Create `prod_corp_db` and `prod_hm2_db` in Azure Portal following same pattern as QA databases.
 
-```bash
-# Create prod_corp_db
-az sql db create \
-  --resource-group "db-prod-rg" \
-  --server "prod-sqlsvr" \
-  --name "prod_corp_db" \
-  --edition "Standard" \
-  --capacity 10 \
-  --max-size 250GB \
-  --backup-storage-redundancy "Geo" \
-  --tags Environment=Production Purpose=Corporate Project=RHC
-```
-
-#### Create prod_hm2_db
-
-```bash
-# Create prod_hm2_db
-az sql db create \
-  --resource-group "db-prod-rg" \
-  --server "prod-sqlsvr" \
-  --name "prod_hm2_db" \
-  --edition "Standard" \
-  --capacity 10 \
-  --max-size 250GB \
-  --backup-storage-redundancy "Geo" \
-  --tags Environment=Production Purpose=HM2 Project=RHC
-```
-
-**Note:** Production databases use **Geo-redundant** backup storage for disaster recovery.
-
----
-
-### Quick Create All Databases (Script)
-
-```bash
-# Ensure logged in to database tenant
-az login --tenant rhcdb.onmicrosoft.com
-az account set --subscription "subs-rhcdb"
-
-# LAM Database
-az sql db create -g "db-lam-rg" -s "lam-sqlsvr" -n "lam_db" \
-  --edition "Standard" --capacity 10 --backup-storage-redundancy "Local"
-
-# QA Databases
-az sql db create -g "db-qa-rg" -s "qa-sqlsvr" -n "qa_corp_db" \
-  --edition "Standard" --capacity 10 --backup-storage-redundancy "Local"
-
-az sql db create -g "db-qa-rg" -s "qa-sqlsvr" -n "qa_hm2_db" \
-  --edition "Standard" --capacity 10 --backup-storage-redundancy "Local"
-
-# Production Databases
-az sql db create -g "db-prod-rg" -s "prod-sqlsvr" -n "prod_corp_db" \
-  --edition "Standard" --capacity 10 --backup-storage-redundancy "Geo"
-
-az sql db create -g "db-prod-rg" -s "prod-sqlsvr" -n "prod_hm2_db" \
-  --edition "Standard" --capacity 10 --backup-storage-redundancy "Geo"
-
-# Verify all databases
-az sql db list -g "db-lam-rg" -s "lam-sqlsvr" --output table
-az sql db list -g "db-qa-rg" -s "qa-sqlsvr" --output table
-az sql db list -g "db-prod-rg" -s "prod-sqlsvr" --output table
-```
+**Note:** Production databases should use **Geo-redundant** backup storage for disaster recovery.
 
 ---
 
@@ -912,83 +713,6 @@ Repeat the process:
 - **Description:** `Production Container Apps Access`
 - Save: Application ID, Tenant ID, Client Secret
 
----
-
-#### Via Azure CLI
-
-```bash
-# Ensure you're in Database tenant
-az login --tenant rhcdb.onmicrosoft.com
-az account set --subscription "subs-rhcdb"
-
-# Get Database tenant ID
-DB_TENANT_ID="b62a8921-d524-41af-9807-1057f031ecda"
-
-# Create LAM App Registration
-LAM_APP=$(az ad app create \
-  --display-name "app-lam-db-access" \
-  --sign-in-audience AzureADMyOrg \
-  --query appId -o tsv)
-
-# Create service principal for LAM app
-az ad sp create --id $LAM_APP
-
-# Create client secret for LAM app
-LAM_SECRET=$(az ad app credential reset \
-  --id $LAM_APP \
-  --append \
-  --years 2 \
-  --query password -o tsv)
-
-echo "LAM App Registration:"
-echo "  Application ID: $LAM_APP"
-echo "  Tenant ID: $DB_TENANT_ID"
-echo "  Client Secret: $LAM_SECRET"
-echo ""
-
-# Create QA App Registration
-QA_APP=$(az ad app create \
-  --display-name "app-qa-db-access" \
-  --sign-in-audience AzureADMyOrg \
-  --query appId -o tsv)
-
-az ad sp create --id $QA_APP
-
-QA_SECRET=$(az ad app credential reset \
-  --id $QA_APP \
-  --append \
-  --years 2 \
-  --query password -o tsv)
-
-echo "QA App Registration:"
-echo "  Application ID: $QA_APP"
-echo "  Tenant ID: $DB_TENANT_ID"
-echo "  Client Secret: $QA_SECRET"
-echo ""
-
-# Create Production App Registration
-PROD_APP=$(az ad app create \
-  --display-name "app-prod-db-access" \
-  --sign-in-audience AzureADMyOrg \
-  --query appId -o tsv)
-
-az ad sp create --id $PROD_APP
-
-PROD_SECRET=$(az ad app credential reset \
-  --id $PROD_APP \
-  --append \
-  --years 2 \
-  --query password -o tsv)
-
-echo "Production App Registration:"
-echo "  Application ID: $PROD_APP"
-echo "  Tenant ID: $DB_TENANT_ID"
-echo "  Client Secret: $PROD_SECRET"
-echo ""
-
-# ⚠️ IMPORTANT: Save these values securely!
-```
-
 **🔐 Security Note:** Store these credentials in Azure Key Vault (in the QA/Prod tenants) - we'll cover this in Phase 5.
 
 ---
@@ -1038,67 +762,6 @@ Repeat:
 
 ---
 
-#### Via Azure CLI
-
-```bash
-# Ensure you're in Database tenant
-az login --tenant rhcdb.onmicrosoft.com
-
-# Get service principal object IDs (NOT app IDs!)
-LAM_SP_ID=$(az ad sp list --display-name "app-lam-db-access" --query [0].id -o tsv)
-QA_SP_ID=$(az ad sp list --display-name "app-qa-db-access" --query [0].id -o tsv)
-PROD_SP_ID=$(az ad sp list --display-name "app-prod-db-access" --query [0].id -o tsv)
-
-# Create LAM security group
-LAM_GROUP_ID=$(az ad group create \
-  --display-name "db-lam-app-users" \
-  --mail-nickname "db-lam-app-users" \
-  --description "Applications with access to LAM databases" \
-  --query id -o tsv)
-
-# Add LAM app to group
-az ad group member add \
-  --group $LAM_GROUP_ID \
-  --member-id $LAM_SP_ID
-
-echo "✅ Created group: db-lam-app-users (ID: $LAM_GROUP_ID)"
-
-# Create QA security group
-QA_GROUP_ID=$(az ad group create \
-  --display-name "db-qa-app-users" \
-  --mail-nickname "db-qa-app-users" \
-  --description "Applications with access to QA databases" \
-  --query id -o tsv)
-
-az ad group member add \
-  --group $QA_GROUP_ID \
-  --member-id $QA_SP_ID
-
-echo "✅ Created group: db-qa-app-users (ID: $QA_GROUP_ID)"
-
-# Create Production security group
-PROD_GROUP_ID=$(az ad group create \
-  --display-name "db-prod-app-users" \
-  --mail-nickname "db-prod-app-users" \
-  --description "Applications with access to Production databases" \
-  --query id -o tsv)
-
-az ad group member add \
-  --group $PROD_GROUP_ID \
-  --member-id $PROD_SP_ID
-
-echo "✅ Created group: db-prod-app-users (ID: $PROD_GROUP_ID)"
-
-# Verify group memberships
-echo ""
-echo "Verifying group memberships:"
-az ad group member list --group "db-lam-app-users" --query "[].displayName" -o table
-az ad group member list --group "db-qa-app-users" --query "[].displayName" -o table
-az ad group member list --group "db-prod-app-users" --query "[].displayName" -o table
-```
-
----
-
 ### 4.3: Register Groups as Database Users
 
 Now we need to tell each database that these groups exist and what they can do.
@@ -1120,17 +783,6 @@ Now we need to tell each database that these groups exist and what they can do.
    - Authentication: **Microsoft Entra ID - Universal with MFA**
    - Database: `lam_db`
    - Click **Connect**
-
-**Option 2: sqlcmd with Azure AD Authentication**
-
-```bash
-# Install sqlcmd (if not already installed)
-# Windows: winget install Microsoft.SQLCmd
-# Mac/Linux: See https://learn.microsoft.com/sql/tools/sqlcmd-utility
-
-# Connect to LAM database
-sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com
-```
 
 ---
 
