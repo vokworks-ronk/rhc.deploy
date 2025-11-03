@@ -28,9 +28,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 - [ ] Have this checklist ready to fill in Tenant IDs after creation
 
 ### Tenant Creation
-- [ ] Create QA Tenant (`rhcqa.onmicrosoft.com`) - Entra External ID
-- [ ] Create Production Tenant (`rhcprod.onmicrosoft.com`) - Entra External ID
-- [ ] Create Database Tenant (`rhcdbcore.onmicrosoft.com`) - Workforce
+- [X] Create QA Tenant (`rhcqa.onmicrosoft.com`) - Entra External ID
+- [X] Create Production Tenant (`rhcprod.onmicrosoft.com`) - Entra External ID
+- [X] Create Database Tenant (`rhcdb.onmicrosoft.com`) - Workforce
 
 ### Post-Creation Verification
 - [ ] Document all Tenant IDs (fill in table below)
@@ -44,9 +44,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 | Tenant Purpose | Domain Name | Tenant ID | Creation Date | Status |
 |----------------|-------------|-----------|---------------|--------|
-| QA (External ID) | `rhcqa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| Production (External ID) | `rhcprod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| Database (Workforce) | `rhcdbcore.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| QA (External ID) | `rhcqa.onmicrosoft.com` | `2604fd9a-93a6-448e-bdc9-25e3c2d671a2` | `____/____/____` | ✅ |
+| Production (External ID) | `rhcprod.onmicrosoft.com` | `62b88a20-73fe-4b74-bed6-a2658d665565` | `2025-11-02` | ✅ |
+| Database (Workforce) | `rhcdb.onmicrosoft.com` | `b62a8921-d524-41af-9807-1057f031ecda` | `2025-11-02` | ✅ |
 
 ---
 

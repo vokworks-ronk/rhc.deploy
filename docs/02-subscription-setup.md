@@ -1,7 +1,7 @@
 # 💳 Phase 2: Subscription Setup
 
-**Status:** ⏳ Waiting for Phase 1  
-**Prerequisites:** All three tenants created from Phase 1  
+**Status:** ✅ Complete  
+**Prerequisites:** All three tenants created from Phase 1 ✅  
 **Estimated Time:** 30-45 minutes
 
 ---
@@ -11,9 +11,9 @@
 This phase creates new Azure subscriptions for each tenant and links them to the central billing account under `recalibratehealthcare.com`.
 
 **Subscriptions to Create:**
-1. **QA Subscription** → `rhc-b2c-qa-sub` (for `rhc-b2c-qa.onmicrosoft.com`)
-2. **Production Subscription** → `rhc-b2c-prod-sub` (for `rhc-b2c-prod.onmicrosoft.com`)
-3. **Database Subscription** → `rhc-db-core-sub` (for `rhcdbcore.onmicrosoft.com`)
+1. **QA Subscription** → `rhc-qa-sub` (for `rhcqa.onmicrosoft.com`)
+2. **Production Subscription** → `rhc-prod-sub` (for `rhcprod.onmicrosoft.com`)
+3. **Database Subscription** → `rhc-db-sub` (for `rhcdb.onmicrosoft.com`)
 
 **Benefits:**
 - Cost isolation and tracking per environment
@@ -26,14 +26,14 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 ## 🎯 Checklist
 
 ### Pre-Creation Tasks
-- [ ] Verify all three tenants created (Phase 1 complete)
+- [X] Verify all three tenants created (Phase 1 complete)
 - [ ] Verify billing account access
 - [ ] Decide on subscription offer type
 
 ### Subscription Creation
-- [ ] Create QA Subscription (`rhc-b2c-qa-sub`)
-- [ ] Create Production Subscription (`rhc-b2c-prod-sub`)
-- [ ] Create Database Subscription (`rhc-db-core-sub`)
+- [X] Create QA Subscription (`subs-rhcqa`)
+- [X] Create Production Subscription (`subs-rhcprod`)
+- [X] Create Database Subscription (`subs-rhcdb`)
 
 ### Post-Creation Configuration
 - [ ] Assign Ron as Owner on all subscriptions
@@ -52,92 +52,120 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 
 | Subscription Name | Tenant | Subscription ID | Creation Date | Status |
 |-------------------|--------|-----------------|---------------|--------|
-| `rhc-b2c-qa-sub` | `rhc-b2c-qa.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| `rhc-b2c-prod-sub` | `rhc-b2c-prod.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
-| `rhc-db-core-sub` | `rhcdbcore.onmicrosoft.com` | `___________________` | `____/____/____` | ⬜ |
+| `subs-rhcqa` | `rhcqa.onmicrosoft.com` | `6991b88f-785e-4e03-bac3-e6721b76140b` | `2025-11-03` | ✅ |
+| `subs-rhcprod` | `rhcprod.onmicrosoft.com` | `a1b7a5b1-6a3b-4bb4-a322-785bf70ed37a` | `2025-11-03` | ✅ |
+| `subs-rhcdb` | `rhcdb.onmicrosoft.com` | `d2d3adf5-0ad7-41f5-853e-0a99cc123733` | `2025-11-03` | ✅ |
 
 ---
 
-## 💡 Subscription Creation Options
+## 💡 Subscription Creation Strategy
 
-### Option A: Azure Portal (Easiest)
+**Recommended Approach: Create in Main Tenant, Then Transfer**
 
-This is the most straightforward method for creating subscriptions.
+New tenants typically don't have billing accounts set up. The most reliable method is:
 
-### Option B: Azure CLI
+1. **Create** subscriptions in your main tenant (`recalibratehealthcare.com`) where billing is already established
+2. **Transfer** (or associate) each subscription to its target tenant
+3. **Configure** access and permissions
 
-Requires Azure CLI and appropriate permissions.
-
-### Option C: Microsoft Graph API
-
-Most complex, but fully automated.
-
-**Recommendation:** Start with Azure Portal for reliability, can automate later.
+This approach avoids billing setup headaches and works immediately.
 
 ---
 
-## 🔧 Method 1: Azure Portal (Recommended)
+## 🔧 Step-by-Step: Create and Transfer Method
 
-### 1. Create QA Subscription
+### Phase A: Create Subscriptions in Main Tenant
 
-#### Step 1: Navigate to Subscriptions
+#### 1. Stay in Main Tenant
 
 1. Log in to Azure Portal: https://portal.azure.com
-2. Switch to the **B2C QA tenant** (`rhc-b2c-qa.onmicrosoft.com`)
-   - Click profile icon → Switch directory
-   - Select `rhc-b2c-qa.onmicrosoft.com`
-
+2. **Stay in** `recalibratehealthcare.com` tenant (don't switch)
 3. Search for **"Subscriptions"** in the top search bar
-4. Click **"+ Add"** or **"Create subscription"**
+4. Click **"+ Add"**
 
-#### Step 2: Choose Offer Type
+#### 2. Create QA Subscription
 
-You'll see several options:
+- Choose your billing account/offer (Pay-As-You-Go or your existing agreement)
+- **Subscription name:** `rhc-qa-sub`
+- **Directory:** Keep in `recalibratehealthcare.com` for now
+- Click **Create**
+- ⏳ Wait 1-3 minutes
+- **Copy the Subscription ID** and save it
 
-**For B2C Tenants (QA and Prod):**
-- **Pay-As-You-Go** (Most common for production workloads)
-- **Enterprise Agreement** (If you have EA with Microsoft)
-- **Microsoft Customer Agreement** (Modern billing)
+#### 3. Create Production Subscription
 
-**Recommendation:** Use **Pay-As-You-Go** or **Microsoft Customer Agreement**
+- Click **"+ Add"** again in Subscriptions
+- Same billing account/offer
+- **Subscription name:** `rhc-prod-sub`
+- **Directory:** Keep in `recalibratehealthcare.com` for now
+- Click **Create**
+- **Copy the Subscription ID**
 
-#### Step 3: Fill in Details
+#### 4. Create Database Subscription
 
-- **Subscription name:** `rhc-b2c-qa-sub`
-- **Billing account:** Link to `recalibratehealthcare.com` billing
-- **Resource group:** (Will create later)
-
-#### Step 4: Complete Creation
-
-- Review and click **"Create"**
-- Wait for subscription to be provisioned (1-5 minutes)
-- Copy the **Subscription ID** to the table above
-
----
-
-### 2. Create Production Subscription
-
-Repeat the same process:
-
-1. Switch to **B2C Production tenant** (`rhc-b2c-prod.onmicrosoft.com`)
-2. Navigate to **Subscriptions** → **Add**
-3. Choose offer type (same as QA)
-4. **Subscription name:** `rhc-b2c-prod-sub`
-5. Link to `recalibratehealthcare.com` billing
-6. Create and document Subscription ID
+- Click **"+ Add"** again
+- Same billing account/offer
+- **Subscription name:** `rhc-db-sub`
+- **Directory:** Keep in `recalibratehealthcare.com` for now
+- Click **Create**
+- **Copy the Subscription ID**
 
 ---
 
-### 3. Create Database Subscription
+### Phase B: Transfer Subscriptions to Target Tenants
 
-Repeat for Database tenant:
+Now we'll transfer each subscription to its intended tenant.
 
-1. Switch to **Database tenant** (`rhcdbcore.onmicrosoft.com`)
-2. Navigate to **Subscriptions** → **Add**
-3. Choose offer type (same as above)
-4. **Subscription name:** `rhc-db-core-sub`
-5. Link to `recalibratehealthcare.com` billing
-6. Create and document Subscription ID
+#### 1. Transfer QA Subscription
+
+1. In Azure Portal, go to **Subscriptions**
+2. Click on **`rhc-qa-sub`**
+3. In the left menu, look for **"Change directory"** or **"Transfer subscription"**
+   - Location may vary: Check under **"Overview"** or **"Properties"** or **"Management"**
+4. Click **"Change directory"**
+5. **Target directory:** Select `rhcqa.onmicrosoft.com` (Tenant ID: `2604fd9a-93a6-448e-bdc9-25e3c2d671a2`)
+6. Review warnings about resources (none yet, so safe)
+7. Click **"Change"**
+8. ⏳ Wait 5-10 minutes for transfer to complete
+
+#### 2. Transfer Production Subscription
+
+1. Go to **Subscriptions** → **`rhc-prod-sub`**
+2. Click **"Change directory"**
+3. **Target directory:** Select `rhcprod.onmicrosoft.com` (Tenant ID: `62b88a20-73fe-4b74-bed6-a2658d665565`)
+4. Click **"Change"**
+5. ⏳ Wait for transfer
+
+#### 3. Transfer Database Subscription
+
+1. Go to **Subscriptions** → **`rhc-db-sub`**
+2. Click **"Change directory"**
+3. **Target directory:** Select `rhcdb.onmicrosoft.com` (Tenant ID: `b62a8921-d524-41af-9807-1057f031ecda`)
+4. Click **"Change"**
+5. ⏳ Wait for transfer
+
+---
+
+### Phase C: Verify Transfers
+
+#### 1. Check QA Tenant
+
+1. Switch to `rhcqa.onmicrosoft.com` tenant
+2. Navigate to **Subscriptions**
+3. Verify `rhc-qa-sub` appears
+4. Click on it and verify you have **Owner** access
+
+#### 2. Check Production Tenant
+
+1. Switch to `rhcprod.onmicrosoft.com`
+2. Verify `rhc-prod-sub` appears
+3. Verify Owner access
+
+#### 3. Check Database Tenant
+
+1. Switch to `rhcdb.onmicrosoft.com`
+2. Verify `rhc-db-sub` appears
+3. Verify Owner access
 
 ---
 
