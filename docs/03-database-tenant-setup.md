@@ -14,17 +14,17 @@ This phase sets up the isolated Database tenant with **three separate environmen
 
 1. **LAM (Large Audience Model)** - Development/Load Testing
    - Resource Group: `db-lam-rg`
-   - SQL Server: `lam-sqlsvr`
+   - SQL Server: `rhcdb-lam-sqlsvr`
    - Database: `lam_db`
 
 2. **QA (Quality Assurance)** - Testing Environment
    - Resource Group: `db-qa-rg`
-   - SQL Server: `qa-sqlsvr`
+   - SQL Server: `rhcdb-qa-sqlsvr`
    - Databases: `qa_corp_db`, `qa_hm2_db`
 
 3. **Production** - Live Environment
    - Resource Group: `db-prod-rg`
-   - SQL Server: `prod-sqlsvr`
+   - SQL Server: `rhcdb-prod-sqlsvr`
    - Databases: `prod_corp_db`, `prod_hm2_db`
 
 **Key Security Principles:**
@@ -50,14 +50,14 @@ This phase sets up the isolated Database tenant with **three separate environmen
 - [ ] Create Production resource group (`db-prod-rg`)
 
 ### LAM Environment Setup
-- [ ] Create SQL Server (`lam-sqlsvr`)
+- [ ] Create SQL Server (`rhcdb-lam-sqlsvr`)
 - [ ] Configure Entra ID admin (Ron)
 - [ ] Disable SQL authentication
 - [ ] Configure firewall rules
 - [ ] Create `lam_db` database
 
 ### QA Environment Setup
-- [ ] Create SQL Server (`qa-sqlsvr`)
+- [ ] Create SQL Server (`rhcdb-qa-sqlsvr`)
 - [ ] Configure Entra ID admin (Ron)
 - [ ] Disable SQL authentication
 - [ ] Configure firewall rules
@@ -65,7 +65,7 @@ This phase sets up the isolated Database tenant with **three separate environmen
 - [ ] Create `qa_hm2_db` database
 
 ### Production Environment Setup
-- [ ] Create SQL Server (`prod-sqlsvr`)
+- [ ] Create SQL Server (`rhcdb-prod-sqlsvr`)
 - [ ] Configure Entra ID admin (Ron)
 - [ ] Disable SQL authentication
 - [ ] Configure firewall rules
@@ -115,19 +115,19 @@ This phase sets up the isolated Database tenant with **three separate environmen
 
 | Name | FQDN | Admin Group | Status |
 |------|------|-------------|--------|
-| `lam-sqlsvr` | `lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | ⬜ |
-| `qa-sqlsvr` | `qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | ⬜ |
-| `prod-sqlsvr` | `prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | ⬜ |
+| `rhcdb-lam-sqlsvr` | `rhcdb-lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | ⬜ |
+| `rhcdb-qa-sqlsvr` | `rhcdb-qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | ⬜ |
+| `rhcdb-prod-sqlsvr` | `rhcdb-prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | ⬜ |
 
 ### Databases
 
 | Environment | Server | Database Name | Tier | Size | Purpose | Status |
 |-------------|--------|---------------|------|------|---------|--------|
-| LAM | `lam-sqlsvr` | `lam_db` | Standard S0 | 10 DTU | Dev/Load Testing | ⬜ |
-| QA | `qa-sqlsvr` | `qa_corp_db` | Standard S0 | 10 DTU | QA Corporate data | ⬜ |
-| QA | `qa-sqlsvr` | `qa_hm2_db` | Standard S0 | 10 DTU | QA HM2 app data | ⬜ |
-| Production | `prod-sqlsvr` | `prod_corp_db` | Standard S0 | 10 DTU | Prod Corporate data | ⬜ |
-| Production | `prod-sqlsvr` | `prod_hm2_db` | Standard S0 | 10 DTU | Prod HM2 app data | ⬜ |
+| LAM | `rhcdb-lam-sqlsvr` | `lam_db` | Standard S0 | 10 DTU | Dev/Load Testing | ⬜ |
+| QA | `rhcdb-qa-sqlsvr` | `qa_corp_db` | Standard S0 | 10 DTU | QA Corporate data | ⬜ |
+| QA | `rhcdb-qa-sqlsvr` | `qa_hm2_db` | Standard S0 | 10 DTU | QA HM2 app data | ⬜ |
+| Production | `rhcdb-prod-sqlsvr` | `prod_corp_db` | Standard S0 | 10 DTU | Prod Corporate data | ⬜ |
+| Production | `rhcdb-prod-sqlsvr` | `prod_hm2_db` | Standard S0 | 10 DTU | Prod HM2 app data | ⬜ |
 
 ---
 
@@ -475,7 +475,7 @@ This takes 1-2 minutes and only needs to be done once per subscription.
 2. **Basics Tab**
    - **Subscription:** `subs-rhcdb`
    - **Resource group:** `db-lam-rg`
-   - **Server name:** `lam-sqlsvr`
+   - **Server name:** `rhcdb-lam-sqlsvr`
    - **Location:** `East US 2`
    - **Authentication method:** Select **"Use both SQL and Microsoft Entra authentication"** (temporarily)
      - **Server admin login:** `sqlAdminNewGroot`
@@ -512,7 +512,7 @@ This takes 1-2 minutes and only needs to be done once per subscription.
    - ⏳ Wait 3-5 minutes
 
 9. **After Creation - Switch to Entra-Only Authentication**
-   - Navigate to the created SQL Server (`lam-sqlsvr`)
+   - Navigate to the created SQL Server (`rhcdb-lam-sqlsvr`)
    - Go to **Settings** → **Microsoft Entra ID**
    - Enable **"Microsoft Entra-only authentication"** toggle
    - Click **Save**
@@ -535,7 +535,7 @@ $MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
 
 # Create LAM SQL Server with all settings (Steps 1-8)
 az sql server create `
-  --name "lam-sqlsvr" `
+  --name "rhcdb-lam-sqlsvr" `
   --resource-group "db-lam-rg" `
   --location "eastus2" `
   --admin-user "sqlAdminNewGroot" `
@@ -549,7 +549,7 @@ az sql server create `
 
 # Configure firewall - Allow Azure services
 az sql server firewall-rule create `
-  --server "lam-sqlsvr" `
+  --server "rhcdb-lam-sqlsvr" `
   --resource-group "db-lam-rg" `
   --name "AllowAzureServices" `
   --start-ip-address "0.0.0.0" `
@@ -557,7 +557,7 @@ az sql server firewall-rule create `
 
 # Add your current IP
 az sql server firewall-rule create `
-  --server "lam-sqlsvr" `
+  --server "rhcdb-lam-sqlsvr" `
   --resource-group "db-lam-rg" `
   --name "MyClientIP" `
   --start-ip-address $MyIp `
@@ -566,11 +566,11 @@ az sql server firewall-rule create `
 # Enable Entra-only authentication (Step 9 - disables SQL auth)
 az sql server ad-only-auth enable `
   --resource-group "db-lam-rg" `
-  --name "lam-sqlsvr"
+  --name "rhcdb-lam-sqlsvr"
 
 # Verify server creation
 Write-Host "`n✅ LAM SQL Server created successfully!" -ForegroundColor Green
-az sql server show --name "lam-sqlsvr" -g "db-lam-rg" `
+az sql server show --name "rhcdb-lam-sqlsvr" -g "db-lam-rg" `
   --query "{Name:name, Location:location, Identity:identity.type, EntraAdmin:administrators.login, EntraOnly:administrators.azureAdOnlyAuthentication}" `
   -o json
 ```
@@ -585,7 +585,7 @@ Repeat the process for QA:
 2. **Basics:**
    - Subscription: `subs-rhcdb`
    - Resource group: `db-qa-rg`
-   - Server name: `qa-sqlsvr`
+   - Server name: `rhcdb-qa-sqlsvr`
    - Location: East US 2
    - **Authentication:** Both SQL and Entra (temporarily)
      - SQL admin: `sqlAdminNewGroot`
@@ -609,7 +609,7 @@ $MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
 
 # Create QA SQL Server
 az sql server create `
-  --name "qa-sqlsvr" `
+  --name "rhcdb-qa-sqlsvr" `
   --resource-group "db-qa-rg" `
   --location "eastus2" `
   --admin-user "sqlAdminNewGroot" `
@@ -623,17 +623,17 @@ az sql server create `
 
 # Configure firewall
 az sql server firewall-rule create `
-  --server "qa-sqlsvr" -g "db-qa-rg" `
+  --server "rhcdb-qa-sqlsvr" -g "db-qa-rg" `
   --name "AllowAzureServices" `
   --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
 
 az sql server firewall-rule create `
-  --server "qa-sqlsvr" -g "db-qa-rg" `
+  --server "rhcdb-qa-sqlsvr" -g "db-qa-rg" `
   --name "MyClientIP" `
   --start-ip-address $MyIp --end-ip-address $MyIp
 
 # Enable Entra-only authentication
-az sql server ad-only-auth enable -g "db-qa-rg" --name "qa-sqlsvr"
+az sql server ad-only-auth enable -g "db-qa-rg" --name "rhcdb-qa-sqlsvr"
 
 Write-Host "`n✅ QA SQL Server created!" -ForegroundColor Green
 ```
@@ -648,7 +648,7 @@ Repeat for Production:
 2. **Basics:**
    - Subscription: `subs-rhcdb`
    - Resource group: `db-prod-rg`
-   - Server name: `prod-sqlsvr`
+   - Server name: `rhcdb-prod-sqlsvr`
    - Location: East US 2
    - **Authentication:** Both SQL and Entra (temporarily)
      - SQL admin: `sqlAdminNewGroot`
@@ -672,7 +672,7 @@ $MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
 
 # Create Production SQL Server
 az sql server create `
-  --name "prod-sqlsvr" `
+  --name "rhcdb-prod-sqlsvr" `
   --resource-group "db-prod-rg" `
   --location "eastus2" `
   --admin-user "sqlAdminNewGroot" `
@@ -686,17 +686,17 @@ az sql server create `
 
 # Configure firewall
 az sql server firewall-rule create `
-  --server "prod-sqlsvr" -g "db-prod-rg" `
+  --server "rhcdb-prod-sqlsvr" -g "db-prod-rg" `
   --name "AllowAzureServices" `
   --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
 
 az sql server firewall-rule create `
-  --server "prod-sqlsvr" -g "db-prod-rg" `
+  --server "rhcdb-prod-sqlsvr" -g "db-prod-rg" `
   --name "MyClientIP" `
   --start-ip-address $MyIp --end-ip-address $MyIp
 
 # Enable Entra-only authentication
-az sql server ad-only-auth enable -g "db-prod-rg" --name "prod-sqlsvr"
+az sql server ad-only-auth enable -g "db-prod-rg" --name "rhcdb-prod-sqlsvr"
 
 Write-Host "`n✅ Production SQL Server created!" -ForegroundColor Green
 ```
@@ -722,7 +722,7 @@ $MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
 
 Write-Host "Creating LAM SQL Server..." -ForegroundColor Cyan
 az sql server create `
-  --name "lam-sqlsvr" -g "db-lam-rg" --location "eastus2" `
+  --name "rhcdb-lam-sqlsvr" -g "db-lam-rg" --location "eastus2" `
   --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
   --enable-public-network true --minimal-tls-version "1.2" `
   --identity-type SystemAssigned `
@@ -730,15 +730,15 @@ az sql server create `
   --external-admin-name "db-lam-sqlsvr-admin" `
   --external-admin-sid $LamAdminGroupId
 
-az sql server firewall-rule create --server "lam-sqlsvr" -g "db-lam-rg" `
+az sql server firewall-rule create --server "rhcdb-lam-sqlsvr" -g "db-lam-rg" `
   --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
-az sql server firewall-rule create --server "lam-sqlsvr" -g "db-lam-rg" `
+az sql server firewall-rule create --server "rhcdb-lam-sqlsvr" -g "db-lam-rg" `
   --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
-az sql server ad-only-auth enable -g "db-lam-rg" --name "lam-sqlsvr"
+az sql server ad-only-auth enable -g "db-lam-rg" --name "rhcdb-lam-sqlsvr"
 
 Write-Host "Creating QA SQL Server..." -ForegroundColor Cyan
 az sql server create `
-  --name "qa-sqlsvr" -g "db-qa-rg" --location "eastus2" `
+  --name "rhcdb-qa-sqlsvr" -g "db-qa-rg" --location "eastus2" `
   --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
   --enable-public-network true --minimal-tls-version "1.2" `
   --identity-type SystemAssigned `
@@ -746,15 +746,15 @@ az sql server create `
   --external-admin-name "db-qa-sqlsvr-admin" `
   --external-admin-sid $QaAdminGroupId
 
-az sql server firewall-rule create --server "qa-sqlsvr" -g "db-qa-rg" `
+az sql server firewall-rule create --server "rhcdb-qa-sqlsvr" -g "db-qa-rg" `
   --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
-az sql server firewall-rule create --server "qa-sqlsvr" -g "db-qa-rg" `
+az sql server firewall-rule create --server "rhcdb-qa-sqlsvr" -g "db-qa-rg" `
   --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
-az sql server ad-only-auth enable -g "db-qa-rg" --name "qa-sqlsvr"
+az sql server ad-only-auth enable -g "db-qa-rg" --name "rhcdb-qa-sqlsvr"
 
 Write-Host "Creating Production SQL Server..." -ForegroundColor Cyan
 az sql server create `
-  --name "prod-sqlsvr" -g "db-prod-rg" --location "eastus2" `
+  --name "rhcdb-prod-sqlsvr" -g "db-prod-rg" --location "eastus2" `
   --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
   --enable-public-network true --minimal-tls-version "1.2" `
   --identity-type SystemAssigned `
@@ -762,11 +762,11 @@ az sql server create `
   --external-admin-name "db-prod-sqlsvr-admin" `
   --external-admin-sid $ProdAdminGroupId
 
-az sql server firewall-rule create --server "prod-sqlsvr" -g "db-prod-rg" `
+az sql server firewall-rule create --server "rhcdb-prod-sqlsvr" -g "db-prod-rg" `
   --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
-az sql server firewall-rule create --server "prod-sqlsvr" -g "db-prod-rg" `
+az sql server firewall-rule create --server "rhcdb-prod-sqlsvr" -g "db-prod-rg" `
   --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
-az sql server ad-only-auth enable -g "db-prod-rg" --name "prod-sqlsvr"
+az sql server ad-only-auth enable -g "db-prod-rg" --name "rhcdb-prod-sqlsvr"
 
 # Verify all servers
 Write-Host "`n✅ All SQL Servers created successfully!" -ForegroundColor Green
@@ -781,7 +781,7 @@ az sql server list --query "[].{Name:name, ResourceGroup:resourceGroup, Location
 
 #### Via Azure Portal
 
-1. Navigate to SQL Server (`lam-sqlsvr`)
+1. Navigate to SQL Server (`rhcdb-lam-sqlsvr`)
 2. Click **"+ Create database"**
 3. **Basics:**
    - Database name: `lam_db`
@@ -798,7 +798,7 @@ az sql server list --query "[].{Name:name, ResourceGroup:resourceGroup, Location
 
 #### Via Azure Portal
 
-1. Navigate to SQL Server (`qa-sqlsvr`)
+1. Navigate to SQL Server (`rhcdb-qa-sqlsvr`)
 2. Click **"+ Create database"**
 3. **Basics:**
    - Database name: `qa_corp_db`
@@ -963,7 +963,7 @@ Now we need to tell each database that these groups exist and what they can do.
 
 1. **Download Azure Data Studio:** https://aka.ms/azuredatastudio
 2. **Connect to LAM Database:**
-   - Server: `lam-sqlsvr.database.windows.net`
+   - Server: `rhcdb-lam-sqlsvr.database.windows.net`
    - Authentication: **Microsoft Entra ID - Universal with MFA**
    - Database: `lam_db`
    - Click **Connect**
@@ -1217,7 +1217,7 @@ az ad sp create-for-rbac \
 Now switch to Database tenant and grant SQL access:
 
 ```sql
--- Connect to rhc-qa-sqlsvr.database.windows.net
+-- Connect to rhc-rhcdb-qa-sqlsvr.database.windows.net
 -- Use corp_db database
 -- Use Azure Data Studio or SQL Server Management Studio
 -- Authenticate with your Entra ID account (Ron)
@@ -1307,7 +1307,7 @@ Connection Timeout=30;
 ```
 
 **Important Parameters:**
-- **Server:** Fully qualified SQL Server name (e.g., `lam-sqlsvr.database.windows.net`)
+- **Server:** Fully qualified SQL Server name (e.g., `rhcdb-lam-sqlsvr.database.windows.net`)
 - **Database:** Specific database name (e.g., `lam_db`)
 - **Authentication:** Must be `Active Directory Service Principal`
 - **User ID:** Application (client) ID from App Registration (NOT the service principal object ID)
@@ -1322,7 +1322,7 @@ Connection Timeout=30;
 **LAM Environment:**
 
 ```
-Server=tcp:lam-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-lam-sqlsvr.database.windows.net,1433;
 Database=lam_db;
 Authentication=Active Directory Service Principal;
 User ID=<lam-app-id-here>;
@@ -1335,7 +1335,7 @@ Connection Timeout=30;
 **QA Environment - Corporate Database:**
 
 ```
-Server=tcp:qa-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;
 Database=qa_corp_db;
 Authentication=Active Directory Service Principal;
 User ID=<qa-app-id-here>;
@@ -1348,7 +1348,7 @@ Connection Timeout=30;
 **QA Environment - HM2 Database:**
 
 ```
-Server=tcp:qa-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;
 Database=qa_hm2_db;
 Authentication=Active Directory Service Principal;
 User ID=<qa-app-id-here>;
@@ -1361,7 +1361,7 @@ Connection Timeout=30;
 **Production Environment - Corporate Database:**
 
 ```
-Server=tcp:prod-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-prod-sqlsvr.database.windows.net,1433;
 Database=prod_corp_db;
 Authentication=Active Directory Service Principal;
 User ID=<prod-app-id-here>;
@@ -1374,7 +1374,7 @@ Connection Timeout=30;
 **Production Environment - HM2 Database:**
 
 ```
-Server=tcp:prod-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-prod-sqlsvr.database.windows.net,1433;
 Database=prod_hm2_db;
 Authentication=Active Directory Service Principal;
 User ID=<prod-app-id-here>;
@@ -1394,7 +1394,7 @@ Connection Timeout=30;
 using System.Data.SqlClient;
 
 string connectionString = 
-    "Server=tcp:qa-sqlsvr.database.windows.net,1433;" +
+    "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;" +
     "Database=qa_corp_db;" +
     "Authentication=Active Directory Service Principal;" +
     $"User ID={Environment.GetEnvironmentVariable("DB_CLIENT_ID")};" +
@@ -1416,7 +1416,7 @@ using (SqlConnection connection = new SqlConnection(connectionString))
 // In appsettings.json or environment variables
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=tcp:qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID={DB_CLIENT_ID};Password={DB_CLIENT_SECRET};Encrypt=True;TrustServerCertificate=False;"
+    "DefaultConnection": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID={DB_CLIENT_ID};Password={DB_CLIENT_SECRET};Encrypt=True;TrustServerCertificate=False;"
   }
 }
 
@@ -1435,7 +1435,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
 import pyodbc
 import os
 
-server = 'qa-sqlsvr.database.windows.net'
+server = 'rhcdb-qa-sqlsvr.database.windows.net'
 database = 'qa_corp_db'
 client_id = os.environ['DB_CLIENT_ID']
 client_secret = os.environ['DB_CLIENT_SECRET']
@@ -1463,7 +1463,7 @@ print(cursor.fetchone())
 const sql = require('mssql');
 
 const config = {
-    server: 'qa-sqlsvr.database.windows.net',
+    server: 'rhcdb-qa-sqlsvr.database.windows.net',
     database: 'qa_corp_db',
     authentication: {
         type: 'azure-active-directory-service-principal-secret',
@@ -1501,7 +1501,7 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     public static void main(String[] args) {
-        String server = "qa-sqlsvr.database.windows.net";
+        String server = "rhcdb-qa-sqlsvr.database.windows.net";
         String database = "qa_corp_db";
         String clientId = System.getenv("DB_CLIENT_ID");
         String clientSecret = System.getenv("DB_CLIENT_SECRET");
@@ -1550,7 +1550,7 @@ az containerapp create \
     db-client-id="<qa-app-id>" \
     db-client-secret="<qa-secret>" \
   --env-vars \
-    "DB_SERVER=qa-sqlsvr.database.windows.net" \
+    "DB_SERVER=rhcdb-qa-sqlsvr.database.windows.net" \
     "DB_NAME=qa_corp_db" \
     "DB_CLIENT_ID=secretref:db-client-id" \
     "DB_CLIENT_SECRET=secretref:db-client-secret"
@@ -1597,7 +1597,7 @@ $env:DB_CLIENT_SECRET = "<your-client-secret>"
 $env:DB_TENANT_ID = "b62a8921-d524-41af-9807-1057f031ecda"
 
 # Test connection with Service Principal
-sqlcmd -S qa-sqlsvr.database.windows.net -d qa_corp_db `
+sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db `
   -G -U $env:DB_CLIENT_ID -P $env:DB_CLIENT_SECRET `
   -Q "SELECT @@VERSION; SELECT SYSTEM_USER, USER_NAME();"
 ```
@@ -1611,7 +1611,7 @@ USER_NAME: db-qa-app-users
 #### Using Azure Data Studio
 
 1. **Create new connection**
-2. **Server:** `qa-sqlsvr.database.windows.net`
+2. **Server:** `rhcdb-qa-sqlsvr.database.windows.net`
 3. **Authentication:** `Azure Active Directory - Service Principal`
 4. **User ID:** `<your-app-id>`
 5. **Password:** `<your-client-secret>`
@@ -1656,7 +1656,7 @@ Database administrators need to connect with their Entra ID accounts for managem
 **Connect to LAM SQL Server:**
 
 1. **Open SSMS**
-2. **Server name:** `lam-sqlsvr.database.windows.net`
+2. **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
 3. **Authentication:** `Microsoft Entra MFA`
 4. **Login:** `ron@recalibratehealthcare.com` (or your admin account)
 5. **Database:** `lam_db` (or leave default)
@@ -1666,7 +1666,7 @@ Database administrators need to connect with their Entra ID accounts for managem
 **Connection String Format (for applications):**
 
 ```
-Server=tcp:lam-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-lam-sqlsvr.database.windows.net,1433;
 Database=lam_db;
 Authentication=Active Directory Interactive;
 Encrypt=True;
@@ -1675,7 +1675,7 @@ TrustServerCertificate=False;
 
 **For MFA-enabled accounts:**
 ```
-Server=tcp:lam-sqlsvr.database.windows.net,1433;
+Server=tcp:rhcdb-lam-sqlsvr.database.windows.net,1433;
 Database=lam_db;
 Authentication=Active Directory Universal with MFA;
 Encrypt=True;
@@ -1691,7 +1691,7 @@ TrustServerCertificate=False;
 1. **Open Azure Data Studio**
 2. **New Connection**
 3. **Connection type:** Microsoft SQL Server
-4. **Server:** `qa-sqlsvr.database.windows.net`
+4. **Server:** `rhcdb-qa-sqlsvr.database.windows.net`
 5. **Authentication type:** `Microsoft Entra ID - Universal with MFA support`
 6. **Account:** Select your admin account (or click "Add an account")
 7. **Database:** `qa_corp_db` (or \<Default\>)
@@ -1710,20 +1710,20 @@ TrustServerCertificate=False;
 
 ```bash
 # Connect to LAM database
-sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com
+sqlcmd -S rhcdb-lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com
 
 # Connect to QA database
-sqlcmd -S qa-sqlsvr.database.windows.net -d qa_corp_db -G -U ron@recalibratehealthcare.com
+sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db -G -U ron@recalibratehealthcare.com
 
 # Connect to Production database
-sqlcmd -S prod-sqlsvr.database.windows.net -d prod_corp_db -G -U ron@recalibratehealthcare.com
+sqlcmd -S rhcdb-prod-sqlsvr.database.windows.net -d prod_corp_db -G -U ron@recalibratehealthcare.com
 ```
 
 **Run a query without interactive login:**
 
 ```bash
 # For accounts without MFA (or with cached credentials)
-sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com -Q "SELECT DB_NAME(), SYSTEM_USER;"
+sqlcmd -S rhcdb-lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com -Q "SELECT DB_NAME(), SYSTEM_USER;"
 ```
 
 ---
@@ -1736,14 +1736,14 @@ Install-Module -Name SqlServer -Scope CurrentUser
 
 # Connect with Entra authentication
 Invoke-Sqlcmd `
-  -ServerInstance "lam-sqlsvr.database.windows.net" `
+  -ServerInstance "rhcdb-lam-sqlsvr.database.windows.net" `
   -Database "lam_db" `
   -AccessToken (Get-AzAccessToken -ResourceUrl "https://database.windows.net/").Token `
   -Query "SELECT @@VERSION, SYSTEM_USER;"
 
 # Or using integrated auth
 Invoke-Sqlcmd `
-  -ServerInstance "qa-sqlsvr.database.windows.net" `
+  -ServerInstance "rhcdb-qa-sqlsvr.database.windows.net" `
   -Database "qa_corp_db" `
   -Username "ron@recalibratehealthcare.com" `
   -Authentication "ActiveDirectoryInteractive" `
@@ -1770,7 +1770,7 @@ token_struct = struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_byt
 # Connect with token
 connection_string = (
     "DRIVER={ODBC Driver 18 for SQL Server};"
-    "SERVER=lam-sqlsvr.database.windows.net;"
+    "SERVER=rhcdb-lam-sqlsvr.database.windows.net;"
     "DATABASE=lam_db;"
     "Encrypt=yes;"
     "TrustServerCertificate=no;"
@@ -1797,7 +1797,7 @@ var token = await credential.GetTokenAsync(tokenRequestContext);
 
 // Connect with access token
 string connectionString = 
-    "Server=tcp:lam-sqlsvr.database.windows.net,1433;" +
+    "Server=tcp:rhcdb-lam-sqlsvr.database.windows.net,1433;" +
     "Database=lam_db;" +
     "Encrypt=True;" +
     "TrustServerCertificate=False;";
@@ -1818,19 +1818,19 @@ using (SqlConnection connection = new SqlConnection(connectionString))
 
 | Environment | Server | Database | App Registration | Group |
 |-------------|--------|----------|------------------|-------|
-| LAM | `lam-sqlsvr.database.windows.net` | `lam_db` | `app-lam-db-access` | `db-lam-app-users` |
-| QA (Corp) | `qa-sqlsvr.database.windows.net` | `qa_corp_db` | `app-qa-db-access` | `db-qa-app-users` |
-| QA (HM2) | `qa-sqlsvr.database.windows.net` | `qa_hm2_db` | `app-qa-db-access` | `db-qa-app-users` |
-| Prod (Corp) | `prod-sqlsvr.database.windows.net` | `prod_corp_db` | `app-prod-db-access` | `db-prod-app-users` |
-| Prod (HM2) | `prod-sqlsvr.database.windows.net` | `prod_hm2_db` | `app-prod-db-access` | `db-prod-app-users` |
+| LAM | `rhcdb-lam-sqlsvr.database.windows.net` | `lam_db` | `app-lam-db-access` | `db-lam-app-users` |
+| QA (Corp) | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db` | `app-qa-db-access` | `db-qa-app-users` |
+| QA (HM2) | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_hm2_db` | `app-qa-db-access` | `db-qa-app-users` |
+| Prod (Corp) | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_corp_db` | `app-prod-db-access` | `db-prod-app-users` |
+| Prod (HM2) | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_hm2_db` | `app-prod-db-access` | `db-prod-app-users` |
 
 #### Admin Connection Strings (Entra ID Users)
 
 | Environment | Server | Database | Admin Group | Admin Members |
 |-------------|--------|----------|-------------|---------------|
-| LAM | `lam-sqlsvr.database.windows.net` | `lam_db` | `db-lam-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
-| QA | `qa-sqlsvr.database.windows.net` | `qa_corp_db`, `qa_hm2_db` | `db-qa-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
-| Production | `prod-sqlsvr.database.windows.net` | `prod_corp_db`, `prod_hm2_db` | `db-prod-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
+| LAM | `rhcdb-lam-sqlsvr.database.windows.net` | `lam_db` | `db-lam-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
+| QA | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db`, `qa_hm2_db` | `db-qa-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
+| Production | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_corp_db`, `prod_hm2_db` | `db-prod-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
 
 **Database Tenant ID (all environments):** `b62a8921-d524-41af-9807-1057f031ecda`
 
@@ -1874,9 +1874,9 @@ az group list --query "[].{Name:name, Location:location, State:properties.provis
 az sql server list --query "[].{Name:name, Location:location, ResourceGroup:resourceGroup, AdminType:administrators.administratorType}" -o table
 
 # Verify Managed Identity is enabled
-az sql server show --name "lam-sqlsvr" -g "db-lam-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
-az sql server show --name "qa-sqlsvr" -g "db-qa-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
-az sql server show --name "prod-sqlsvr" -g "db-prod-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
+az sql server show --name "rhcdb-lam-sqlsvr" -g "db-lam-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
+az sql server show --name "rhcdb-qa-sqlsvr" -g "db-qa-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
+az sql server show --name "rhcdb-prod-sqlsvr" -g "db-prod-rg" --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
 
 # Expected: identity.type = "SystemAssigned"
 ```
@@ -2154,13 +2154,13 @@ Test that admins can connect using Entra authentication.
 
 ```bash
 # Test LAM
-sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
+sqlcmd -S rhcdb-lam-sqlsvr.database.windows.net -d lam_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
 
 # Test QA
-sqlcmd -S qa-sqlsvr.database.windows.net -d qa_corp_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
+sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
 
 # Test Production
-sqlcmd -S prod-sqlsvr.database.windows.net -d prod_corp_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
+sqlcmd -S rhcdb-prod-sqlsvr.database.windows.net -d prod_corp_db -G -U ron@recalibratehealthcare.com -Q "SELECT SYSTEM_USER, USER_NAME(), DB_NAME();"
 
 # Expected output for each:
 # SYSTEM_USER: ron@recalibratehealthcare.com
@@ -2206,7 +2206,7 @@ $DB_TENANT_ID = "b62a8921-d524-41af-9807-1057f031ecda"
 # Test LAM connection
 Write-Host "Testing LAM Service Principal..." -ForegroundColor Cyan
 try {
-    $result = sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db `
+    $result = sqlcmd -S rhcdb-lam-sqlsvr.database.windows.net -d lam_db `
         -U $LAM_CLIENT_ID -P $LAM_SECRET -G `
         -Q "SELECT SYSTEM_USER, USER_NAME();" -W
     Write-Host "✅ LAM Connection Success" -ForegroundColor Green
@@ -2218,7 +2218,7 @@ try {
 # Test QA connection
 Write-Host "`nTesting QA Service Principal..." -ForegroundColor Cyan
 try {
-    $result = sqlcmd -S qa-sqlsvr.database.windows.net -d qa_corp_db `
+    $result = sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db `
         -U $QA_CLIENT_ID -P $QA_SECRET -G `
         -Q "SELECT SYSTEM_USER, USER_NAME();" -W
     Write-Host "✅ QA Connection Success" -ForegroundColor Green
@@ -2230,7 +2230,7 @@ try {
 # Test Production connection
 Write-Host "`nTesting Production Service Principal..." -ForegroundColor Cyan
 try {
-    $result = sqlcmd -S prod-sqlsvr.database.windows.net -d prod_corp_db `
+    $result = sqlcmd -S rhcdb-prod-sqlsvr.database.windows.net -d prod_corp_db `
         -U $PROD_CLIENT_ID -P $PROD_SECRET -G `
         -Q "SELECT SYSTEM_USER, USER_NAME();" -W
     Write-Host "✅ Production Connection Success" -ForegroundColor Green
@@ -2251,11 +2251,11 @@ Attempt to connect with the SQL admin credentials (should fail).
 
 ```bash
 # These should all FAIL with "Login failed"
-sqlcmd -S lam-sqlsvr.database.windows.net -d lam_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
+sqlcmd -S rhcdb-lam-sqlsvr.database.windows.net -d lam_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
 
-sqlcmd -S qa-sqlsvr.database.windows.net -d qa_corp_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
+sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
 
-sqlcmd -S prod-sqlsvr.database.windows.net -d prod_corp_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
+sqlcmd -S rhcdb-prod-sqlsvr.database.windows.net -d prod_corp_db -U sqlAdminNewGroot -P "IAmNewGroot!" -Q "SELECT 1"
 
 # Expected error: "Login failed for user 'sqlAdminNewGroot'. Reason: Azure Active Directory only authentication is enabled."
 # ✅ This confirms SQL authentication is properly disabled!
@@ -2531,7 +2531,7 @@ Configure each SQL Server to send logs to Log Analytics.
 #### Via Azure Portal (LAM SQL Server)
 
 1. **Navigate to SQL Server**
-   - Go to `lam-sqlsvr`
+   - Go to `rhcdb-lam-sqlsvr`
    - Click **Diagnostic settings** (under Monitoring)
 
 2. **Add Diagnostic Setting**
@@ -3091,7 +3091,7 @@ After completing this phase:
 
 ### Infrastructure Created
 - [x] Resource groups: rhc-db-qa-rg, rhc-db-prod-rg
-- [x] SQL Server: rhc-qa-sqlsvr.database.windows.net
+- [x] SQL Server: rhc-rhcdb-qa-sqlsvr.database.windows.net
 - [x] Databases: corp_db, hp2_db
 - [x] Log Analytics workspace for auditing
 
