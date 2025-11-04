@@ -446,6 +446,23 @@ Each SQL Server must have **System-Assigned Managed Identity** enabled. This is 
 
 ---
 
+⚠️ **PREREQUISITE: Register Microsoft.Sql Resource Provider**
+
+If this is the first SQL Server in the subscription, you must register the resource provider:
+
+```powershell
+# Register Microsoft.Sql provider (one-time setup per subscription)
+az provider register --namespace Microsoft.Sql --wait
+
+# Verify registration
+az provider show --namespace Microsoft.Sql --query "registrationState"
+# Should return: "Registered"
+```
+
+This takes 1-2 minutes and only needs to be done once per subscription.
+
+---
+
 ### 3.1: Create LAM SQL Server
 
 #### Via Azure Portal
