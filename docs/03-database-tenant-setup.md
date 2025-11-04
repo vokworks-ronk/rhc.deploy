@@ -501,6 +501,63 @@ Each SQL Server must have **System-Assigned Managed Identity** enabled. This is 
    - Click **Save**
    - ✅ SQL authentication is now disabled!
 
+#### Via Azure CLI (PowerShell)
+
+Complete script that performs all 9 steps:
+
+```powershell
+# Ensure logged into Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+az account set --subscription "subs-rhcdb"
+
+# Get security group Object ID
+$LamAdminGroupId = az ad group show --group "db-lam-sqlsvr-admin" --query id -o tsv
+
+# Get your client IP for firewall
+$MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
+
+# Create LAM SQL Server with all settings (Steps 1-8)
+az sql server create `
+  --name "lam-sqlsvr" `
+  --resource-group "db-lam-rg" `
+  --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" `
+  --admin-password "IAmNewGroot!" `
+  --enable-public-network true `
+  --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-lam-sqlsvr-admin" `
+  --external-admin-sid $LamAdminGroupId
+
+# Configure firewall - Allow Azure services
+az sql server firewall-rule create `
+  --server "lam-sqlsvr" `
+  --resource-group "db-lam-rg" `
+  --name "AllowAzureServices" `
+  --start-ip-address "0.0.0.0" `
+  --end-ip-address "0.0.0.0"
+
+# Add your current IP
+az sql server firewall-rule create `
+  --server "lam-sqlsvr" `
+  --resource-group "db-lam-rg" `
+  --name "MyClientIP" `
+  --start-ip-address $MyIp `
+  --end-ip-address $MyIp
+
+# Enable Entra-only authentication (Step 9 - disables SQL auth)
+az sql server ad-only-auth enable `
+  --resource-group "db-lam-rg" `
+  --name "lam-sqlsvr"
+
+# Verify server creation
+Write-Host "`n✅ LAM SQL Server created successfully!" -ForegroundColor Green
+az sql server show --name "lam-sqlsvr" -g "db-lam-rg" `
+  --query "{Name:name, Location:location, Identity:identity.type, EntraAdmin:administrators.login, EntraOnly:administrators.azureAdOnlyAuthentication}" `
+  -o json
+```
+
 ---
 
 ### 3.2: Create QA SQL Server
@@ -523,6 +580,46 @@ Repeat the process for QA:
 6. **Tags:** Environment=QA
 7. **Create**
 8. **After creation:** Enable "Entra-only authentication" in settings
+
+#### Via Azure CLI (PowerShell)
+
+```powershell
+# Get security group Object ID
+$QaAdminGroupId = az ad group show --group "db-qa-sqlsvr-admin" --query id -o tsv
+
+# Get your client IP
+$MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
+
+# Create QA SQL Server
+az sql server create `
+  --name "qa-sqlsvr" `
+  --resource-group "db-qa-rg" `
+  --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" `
+  --admin-password "IAmNewGroot!" `
+  --enable-public-network true `
+  --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-qa-sqlsvr-admin" `
+  --external-admin-sid $QaAdminGroupId
+
+# Configure firewall
+az sql server firewall-rule create `
+  --server "qa-sqlsvr" -g "db-qa-rg" `
+  --name "AllowAzureServices" `
+  --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
+
+az sql server firewall-rule create `
+  --server "qa-sqlsvr" -g "db-qa-rg" `
+  --name "MyClientIP" `
+  --start-ip-address $MyIp --end-ip-address $MyIp
+
+# Enable Entra-only authentication
+az sql server ad-only-auth enable -g "db-qa-rg" --name "qa-sqlsvr"
+
+Write-Host "`n✅ QA SQL Server created!" -ForegroundColor Green
+```
 
 ---
 
@@ -547,46 +644,116 @@ Repeat for Production:
 7. **Create**
 8. **After creation:** Enable "Entra-only authentication" in settings
 
----
+#### Via Azure CLI (PowerShell)
 
-# Configure firewall - Allow Azure services
-az sql server firewall-rule create \
-  --server "lam-sqlsvr" -g "db-lam-rg" \
-  --name "AllowAzureServices" \
-  --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+```powershell
+# Get security group Object ID
+$ProdAdminGroupId = az ad group show --group "db-prod-sqlsvr-admin" --query id -o tsv
 
-az sql server firewall-rule create \
-  --server "qa-sqlsvr" -g "db-qa-rg" \
-  --name "AllowAzureServices" \
-  --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+# Get your client IP
+$MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
 
-az sql server firewall-rule create \
-  --server "prod-sqlsvr" -g "db-prod-rg" \
-  --name "AllowAzureServices" \
-  --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
-
-# Verify servers created with Managed Identity enabled
-az sql server list --output table
-az sql server show --name "lam-sqlsvr" -g "db-lam-rg" --query identity
-az sql server show --name "qa-sqlsvr" -g "db-qa-rg" --query identity
-az sql server show --name "prod-sqlsvr" -g "db-prod-rg" --query identity
+# Create Production SQL Server
+az sql server create `
+  --name "prod-sqlsvr" `
+  --resource-group "db-prod-rg" `
+  --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" `
+  --admin-password "IAmNewGroot!" `
+  --enable-public-network true `
+  --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-prod-sqlsvr-admin" `
+  --external-admin-sid $ProdAdminGroupId
 
 # Configure firewall
-New-AzSqlServerFirewallRule `
-  -ResourceGroupName "rhc-db-qa-rg" `
-  -ServerName "rhc-qa-sqlsvr" `
-  -FirewallRuleName "AllowAzureServices" `
-  -StartIpAddress "0.0.0.0" `
-  -EndIpAddress "0.0.0.0"
+az sql server firewall-rule create `
+  --server "prod-sqlsvr" -g "db-prod-rg" `
+  --name "AllowAzureServices" `
+  --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
 
-# Add your IP
-$myIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
-New-AzSqlServerFirewallRule `
-  -ResourceGroupName "rhc-db-qa-rg" `
-  -ServerName "rhc-qa-sqlsvr" `
-  -FirewallRuleName "MyClientIP" `
-  -StartIpAddress $myIp `
-  -EndIpAddress $myIp
+az sql server firewall-rule create `
+  --server "prod-sqlsvr" -g "db-prod-rg" `
+  --name "MyClientIP" `
+  --start-ip-address $MyIp --end-ip-address $MyIp
+
+# Enable Entra-only authentication
+az sql server ad-only-auth enable -g "db-prod-rg" --name "prod-sqlsvr"
+
+Write-Host "`n✅ Production SQL Server created!" -ForegroundColor Green
+```
+
+---
+
+### Create All Three Servers (Quick Script)
+
+Or run this single script to create all three at once:
+
+```powershell
+# Ensure logged into Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+az account set --subscription "subs-rhcdb"
+
+# Get security group Object IDs
+$LamAdminGroupId = az ad group show --group "db-lam-sqlsvr-admin" --query id -o tsv
+$QaAdminGroupId = az ad group show --group "db-qa-sqlsvr-admin" --query id -o tsv
+$ProdAdminGroupId = az ad group show --group "db-prod-sqlsvr-admin" --query id -o tsv
+
+# Get your client IP
+$MyIp = (Invoke-WebRequest -Uri "https://api.ipify.org").Content
+
+Write-Host "Creating LAM SQL Server..." -ForegroundColor Cyan
+az sql server create `
+  --name "lam-sqlsvr" -g "db-lam-rg" --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
+  --enable-public-network true --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-lam-sqlsvr-admin" `
+  --external-admin-sid $LamAdminGroupId
+
+az sql server firewall-rule create --server "lam-sqlsvr" -g "db-lam-rg" `
+  --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
+az sql server firewall-rule create --server "lam-sqlsvr" -g "db-lam-rg" `
+  --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
+az sql server ad-only-auth enable -g "db-lam-rg" --name "lam-sqlsvr"
+
+Write-Host "Creating QA SQL Server..." -ForegroundColor Cyan
+az sql server create `
+  --name "qa-sqlsvr" -g "db-qa-rg" --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
+  --enable-public-network true --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-qa-sqlsvr-admin" `
+  --external-admin-sid $QaAdminGroupId
+
+az sql server firewall-rule create --server "qa-sqlsvr" -g "db-qa-rg" `
+  --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
+az sql server firewall-rule create --server "qa-sqlsvr" -g "db-qa-rg" `
+  --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
+az sql server ad-only-auth enable -g "db-qa-rg" --name "qa-sqlsvr"
+
+Write-Host "Creating Production SQL Server..." -ForegroundColor Cyan
+az sql server create `
+  --name "prod-sqlsvr" -g "db-prod-rg" --location "eastus2" `
+  --admin-user "sqlAdminNewGroot" --admin-password "IAmNewGroot!" `
+  --enable-public-network true --minimal-tls-version "1.2" `
+  --identity-type SystemAssigned `
+  --external-admin-principal-type Group `
+  --external-admin-name "db-prod-sqlsvr-admin" `
+  --external-admin-sid $ProdAdminGroupId
+
+az sql server firewall-rule create --server "prod-sqlsvr" -g "db-prod-rg" `
+  --name "AllowAzureServices" --start-ip-address "0.0.0.0" --end-ip-address "0.0.0.0"
+az sql server firewall-rule create --server "prod-sqlsvr" -g "db-prod-rg" `
+  --name "MyClientIP" --start-ip-address $MyIp --end-ip-address $MyIp
+az sql server ad-only-auth enable -g "db-prod-rg" --name "prod-sqlsvr"
+
+# Verify all servers
+Write-Host "`n✅ All SQL Servers created successfully!" -ForegroundColor Green
+az sql server list --query "[].{Name:name, ResourceGroup:resourceGroup, Location:location, Identity:identity.type}" -o table
 ```
 
 ---
