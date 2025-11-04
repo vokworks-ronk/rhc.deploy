@@ -823,6 +823,85 @@ Create `prod_corp_db` and `prod_hm2_db` in Azure Portal following same pattern a
 
 ---
 
+### Create All Databases (Azure CLI Script)
+
+Complete script to create all 5 databases:
+
+```powershell
+# Ensure logged into Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+az account set --subscription "subs-rhcdb"
+
+# Create LAM Database
+Write-Host "Creating LAM database..." -ForegroundColor Cyan
+az sql db create `
+  --resource-group "db-lam-rg" `
+  --server "rhcdb-lam-sqlsvr" `
+  --name "lam_db" `
+  --edition "Standard" `
+  --capacity 10 `
+  --max-size 250GB `
+  --backup-storage-redundancy "Local" `
+  --tags Environment=LAM Purpose=DevTesting Project=RHC
+
+# Create QA Databases
+Write-Host "Creating QA databases..." -ForegroundColor Cyan
+az sql db create `
+  --resource-group "db-qa-rg" `
+  --server "rhcdb-qa-sqlsvr" `
+  --name "qa_corp_db" `
+  --edition "Standard" `
+  --capacity 10 `
+  --max-size 250GB `
+  --backup-storage-redundancy "Local" `
+  --tags Environment=QA Purpose=Corporate Project=RHC
+
+az sql db create `
+  --resource-group "db-qa-rg" `
+  --server "rhcdb-qa-sqlsvr" `
+  --name "qa_hm2_db" `
+  --edition "Standard" `
+  --capacity 10 `
+  --max-size 250GB `
+  --backup-storage-redundancy "Local" `
+  --tags Environment=QA Purpose=HM2 Project=RHC
+
+# Create Production Databases
+Write-Host "Creating Production databases..." -ForegroundColor Cyan
+az sql db create `
+  --resource-group "db-prod-rg" `
+  --server "rhcdb-prod-sqlsvr" `
+  --name "prod_corp_db" `
+  --edition "Standard" `
+  --capacity 10 `
+  --max-size 250GB `
+  --backup-storage-redundancy "Geo" `
+  --tags Environment=Production Purpose=Corporate Project=RHC
+
+az sql db create `
+  --resource-group "db-prod-rg" `
+  --server "rhcdb-prod-sqlsvr" `
+  --name "prod_hm2_db" `
+  --edition "Standard" `
+  --capacity 10 `
+  --max-size 250GB `
+  --backup-storage-redundancy "Geo" `
+  --tags Environment=Production Purpose=HM2 Project=RHC
+
+# Verify all databases
+Write-Host "`n✅ All databases created!" -ForegroundColor Green
+Write-Host "LAM Databases:" -ForegroundColor Cyan
+az sql db list -g "db-lam-rg" -s "rhcdb-lam-sqlsvr" --query "[].name" -o table
+
+Write-Host "`nQA Databases:" -ForegroundColor Cyan
+az sql db list -g "db-qa-rg" -s "rhcdb-qa-sqlsvr" --query "[].name" -o table
+
+Write-Host "`nProduction Databases:" -ForegroundColor Cyan
+az sql db list -g "db-prod-rg" -s "rhcdb-prod-sqlsvr" --query "[].name" -o table
+```
+
+---
+
 ## 🔧 Step 4: Setup Cross-Tenant Database Access
 
 **🎯 Goal:** Allow Container Apps (in QA/Prod External ID tenants) to securely access Databases (in Database tenant).
