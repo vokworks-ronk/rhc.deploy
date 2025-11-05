@@ -2347,7 +2347,168 @@ TrustServerCertificate=False;
 Connection Timeout=30;
 ```
 
-**✅ Step 7 Complete!** Connection strings documented, DBA tools configured, and credentials referenced.
+---
+
+### 7.10: Phase 5 Container Apps Setup - Quick Reference
+
+When you're ready to deploy Container Apps (Phase 5), here's exactly what you'll need:
+
+#### What Gets Stored in Key Vault (in QA/Prod tenants)
+
+Each Container App environment needs these secrets in its tenant's Key Vault:
+
+**For LAM Container Apps (in LAM/Dev tenant if applicable):**
+```
+db-server: rhcdb-lam-sqlsvr.database.windows.net
+db-name: lam_db
+db-app-id: <Application ID from app-lam-db-access>
+db-app-secret: <Client secret from app-lam-db-access>
+db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
+```
+
+**For QA Container Apps (in rhcqa.onmicrosoft.com tenant):**
+```
+db-server: rhcdb-qa-sqlsvr.database.windows.net
+db-corp-name: qa_corp_db
+db-hm2-name: qa_hm2_db
+db-app-id: <Application ID from app-qa-db-access>
+db-app-secret: <Client secret from app-qa-db-access>
+db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
+```
+
+**For Production Container Apps (in rhcprod.onmicrosoft.com tenant):**
+```
+db-server: rhcdb-prod-sqlsvr.database.windows.net
+db-corp-name: prod_corp_db
+db-hm2-name: prod_hm2_db
+db-app-id: <Application ID from app-prod-db-access>
+db-app-secret: <Client secret from app-prod-db-access>
+db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
+```
+
+#### How Container Apps Will Use These
+
+**Option A: Build Connection String in Key Vault (Recommended)**
+
+Store the complete connection string as a single secret:
+
+**Key Vault Secret Name:** `db-connection-string`  
+**Value:**
+```
+Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=<qa-app-id>;Password=<qa-secret>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+```
+
+**In Container App:**
+```bash
+az containerapp create \
+  --name "qa-corp-app" \
+  --secrets "db-conn=keyvaultref:<key-vault-url>/secrets/db-connection-string" \
+  --env-vars "ConnectionStrings__DefaultConnection=secretref:db-conn"
+```
+
+**In Application Code (.NET):**
+```csharp
+// appsettings.json or environment variable
+var connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+// Or directly from environment
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+```
+
+**Option B: Build Connection String from Individual Secrets**
+
+Store secrets separately and build connection string in app:
+
+**In Container App:**
+```bash
+az containerapp create \
+  --name "qa-corp-app" \
+  --secrets \
+    db-server="keyvaultref:..." \
+    db-name="keyvaultref:..." \
+    db-app-id="keyvaultref:..." \
+    db-app-secret="keyvaultref:..." \
+  --env-vars \
+    "DB_SERVER=secretref:db-server" \
+    "DB_NAME=secretref:db-name" \
+    "DB_CLIENT_ID=secretref:db-app-id" \
+    "DB_CLIENT_SECRET=secretref:db-app-secret"
+```
+
+**In Application Code:**
+```csharp
+var connectionString = new SqlConnectionStringBuilder
+{
+    DataSource = $"tcp:{Environment.GetEnvironmentVariable("DB_SERVER")},1433",
+    InitialCatalog = Environment.GetEnvironmentVariable("DB_NAME"),
+    Authentication = SqlAuthenticationMethod.ActiveDirectoryServicePrincipal,
+    UserID = Environment.GetEnvironmentVariable("DB_CLIENT_ID"),
+    Password = Environment.GetEnvironmentVariable("DB_CLIENT_SECRET"),
+    Encrypt = true,
+    TrustServerCertificate = false,
+    ConnectTimeout = 30
+}.ConnectionString;
+```
+
+#### Connection Flow Diagram
+
+```
+┌─────────────────────┐
+│  Container App      │
+│  (QA Tenant)        │
+│                     │
+│  1. Reads env var   │
+│     from Key Vault  │
+└──────────┬──────────┘
+           │
+           │ 2. Uses App ID + Secret
+           │    to authenticate
+           ▼
+┌─────────────────────┐
+│  Azure AD           │
+│  (Database Tenant)  │
+│                     │
+│  3. Validates       │
+│     Service         │
+│     Principal       │
+└──────────┬──────────┘
+           │
+           │ 4. Returns token
+           │
+           ▼
+┌─────────────────────┐
+│  SQL Server         │
+│  (Database Tenant)  │
+│                     │
+│  5. Maps SP to      │
+│     db-qa-app-users │
+│  6. Grants perms    │
+└─────────────────────┘
+```
+
+#### Testing Before Phase 5
+
+You can test the connection string works locally:
+
+```powershell
+# Get the app ID and secret from Step 4.1 output
+$appId = "<your-qa-app-id>"
+$secret = "<your-qa-client-secret>"
+
+# Test with .NET (requires Microsoft.Data.SqlClient NuGet package)
+$connString = "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=$appId;Password=$secret;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+
+# Or test with sqlcmd
+sqlcmd -S rhcdb-qa-sqlsvr.database.windows.net -d qa_corp_db -G -U $appId -P $secret -Q "SELECT SYSTEM_USER, USER_NAME();"
+```
+
+Expected output:
+```
+SYSTEM_USER: app-qa-db-access (the service principal)
+USER_NAME: db-qa-app-users (the database group with permissions)
+```
+
+**✅ Step 7 Complete!** Connection strings documented, Key Vault integration explained, and ready for Phase 5 Container App deployment.
 
 ---
 
