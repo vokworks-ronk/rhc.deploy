@@ -1202,87 +1202,26 @@ Now we need to tell each database that these groups exist and what they can do.
 **⚠️ Prerequisites:**
 - SQL Servers and databases must be created (Step 2 & 3)
 - You must be an Entra admin on the SQL Server
-- SQL Server Management Studio (SSMS) - **RECOMMENDED** for reliable authentication
-- Alternative: VS Code with mssql extension or Azure Portal Query Editor
+- Install Azure Data Studio or sqlcmd tool
 
 ---
 
-#### 🔐 CRITICAL: Tenant Context for Authentication
+#### Connect to Database as Entra Admin
 
-When connecting to databases in the **Database tenant**, you MUST authenticate with the Database tenant identity, not your work tenant identity.
+**Option 1: Azure Data Studio (Recommended)**
 
-**Why This Matters:**
-- You have the same username (ron@recalibratehealthcare.com) in multiple tenants
-- Each tenant has its own MFA configuration
-- **Work Tenant** MFA ≠ **Database Tenant** MFA
-- SQL Server is in the Database tenant, so you need Database tenant authentication
-
-**Tenant ID:** `b62a8921-d524-41af-9807-1057f031ecda` (rhcdb.onmicrosoft.com)
-
----
-
-#### Connect to Database with SSMS (RECOMMENDED)
-
-**Why SSMS?** It properly handles tenant-specific authentication and MFA, unlike VS Code which may authenticate in the wrong tenant context.
-
-**Setup:**
-
-1. **Download SSMS** (if not installed):
-   - https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms
-
-2. **Connect:**
-   - **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
-   - **Authentication:** `Azure Active Directory - Universal with MFA`
-   - **User name:** `ron_recalibratehealthcare.com#EXT#@rhcdb.onmicrosoft.com`
+1. **Download Azure Data Studio:** https://aka.ms/azuredatastudio
+2. **Connect to LAM Database:**
+   - Server: `rhcdb-lam-sqlsvr.database.windows.net`
+   - Authentication: **Microsoft Entra ID - Universal with MFA**
+   - Database: `lam_db`
    - Click **Connect**
-
-3. **Authenticate:**
-   - Login dialog appears (generic, no tenant branding)
-   - **Use the Database tenant MFA** when prompted
-   - Select `lam_db` from the database dropdown
-
----
-
-#### Connect to Database with VS Code (Alternative)
-
-**⚠️ Known Issue:** VS Code mssql extension may authenticate in your default tenant (work tenant) instead of the Database tenant, causing AADSTS50076 errors. If you encounter authentication issues, use SSMS instead.
-
-**Setup (First Time):**
-
-1. **Install mssql extension** (if not already installed):
-   - Press `Ctrl+Shift+X`
-   - Search for `ms-mssql.mssql`
-   - Install **SQL Server (mssql)** by Microsoft
-
-2. **Create new connection:**
-   - Press `Ctrl+Shift+P` → type `MSSQL: Connect`
-   - Or click the plug icon in the mssql sidebar
-   
-3. **Connection Settings:**
-   - **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
-   - **Database name:** `lam_db`
-   - **Authentication Type:** `Microsoft Entra ID - Universal with MFA support`
-   - **Tenant ID:** `b62a8921-d524-41af-9807-1057f031ecda` *(if prompted)*
-   - **Account:** Select your account
-   - **Profile Name (optional):** `LAM Database`
-
-4. **Authenticate:**
-   - Click **Sign in** button
-   - Browser opens for MFA
-   - **Use Database tenant MFA** when prompted
-   - Return to VS Code
-
-**To Run Queries:**
-- Create a new `.sql` file or open an existing one
-- Select the connection from the status bar (bottom right)
-- Write your query
-- Press `Ctrl+Shift+E` to execute (or right-click → Execute Query)
 
 ---
 
 #### Register Group in LAM Database
 
-Connect to `lam_db` and run these SQL commands:
+Once connected to `lam_db`, run these SQL commands:
 
 ```sql
 -- Create user for the security group
@@ -1420,80 +1359,285 @@ SELECT name, type_desc FROM sys.database_principals WHERE name = 'db-prod-app-us
 
 ## 🔧 Step 5: Configure Audit Logging
 
-### Create Log Analytics Workspace
+**💰 Cost:** First 5 GB/month per subscription is FREE, then ~$2.30/GB. SQL audit logs are small; likely stay under free tier.
 
-#### Via Azure CLI
+**⚠️ Important:** Enable audit logging on **all three SQL servers** (LAM, QA, Production) for consistent security visibility. Use a single Log Analytics workspace to consolidate logs and stay within the free tier.
 
-```bash
-# Create Log Analytics workspace for audit logs
-az monitor log-analytics workspace create \
-  --resource-group "rhc-db-qa-rg" \
-  --workspace-name "rhc-qa-db-logs" \
-  --location "eastus2" \
-  --tags Environment=QA Purpose=Auditing Project=RHC
+---
 
-# Get workspace ID
-$workspaceId = az monitor log-analytics workspace show \
-  --resource-group "rhc-db-qa-rg" \
-  --workspace-name "rhc-qa-db-logs" \
+### Create Log Analytics Workspace (Single Workspace for All Servers)
+
+#### Via Azure CLI (PowerShell)
+
+```powershell
+# Switch to Database tenant
+az account set --subscription "subs-rhcdb"
+
+# Create a single Log Analytics workspace for all audit logs
+# Using db-lam-rg since it's the first resource group
+az monitor log-analytics workspace create `
+  --resource-group "db-lam-rg" `
+  --workspace-name "rhcdb-audit-logs" `
+  --location "eastus2" `
+  --tags Purpose=Auditing Project=RHC Scope=AllServers
+
+Write-Host "✅ Log Analytics workspace created" -ForegroundColor Green
+
+# Get workspace ID (needed for audit configuration)
+$workspaceId = az monitor log-analytics workspace show `
+  --resource-group "db-lam-rg" `
+  --workspace-name "rhcdb-audit-logs" `
   --query id -o tsv
+
+Write-Host "Workspace ID: $workspaceId" -ForegroundColor Cyan
 ```
 
-### Enable SQL Auditing
+---
 
-#### Via Azure Portal
+### Enable SQL Auditing on All Servers
 
-1. Navigate to SQL Server (`rhc-qa-sqlsvr`)
-2. Click **"Auditing"** under Security
-3. Toggle **"Enable Azure SQL Auditing"** to **ON**
-4. **Audit log destination:**
-   - ✅ Log Analytics
-   - Select the workspace: `rhc-qa-db-logs`
-5. **Audited event types:** Select all (default)
-6. Click **"Save"**
+**⚠️ Important:** The Microsoft.Insights resource provider must be registered before enabling audit logging. This happens automatically but takes 1-2 minutes to propagate.
 
-#### Via Azure CLI
+#### Via Azure CLI (PowerShell) - Complete Script
 
-```bash
-# Enable server-level auditing
-az sql server audit-policy update \
-  --resource-group "rhc-db-qa-rg" \
-  --name "rhc-qa-sqlsvr" \
-  --state Enabled \
-  --log-analytics-target-state Enabled \
+```powershell
+# Ensure Database tenant context
+az account set --subscription "subs-rhcdb"
+
+# Register Microsoft.Insights provider (required for Log Analytics integration)
+Write-Host "`n📝 Registering Microsoft.Insights provider..." -ForegroundColor Cyan
+az provider register --namespace Microsoft.Insights
+
+# Wait for registration to complete
+Write-Host "Waiting for registration to complete (this may take 1-2 minutes)..." -ForegroundColor Yellow
+do {
+    $state = az provider show --namespace Microsoft.Insights --query "registrationState" -o tsv
+    Write-Host "Provider state: $state" -ForegroundColor Cyan
+    if ($state -ne "Registered") {
+        Start-Sleep -Seconds 15
+    }
+} while ($state -ne "Registered")
+
+Write-Host "✅ Microsoft.Insights provider registered" -ForegroundColor Green
+
+# Wait for propagation across Azure services
+# NOTE: Provider registration can take several minutes to fully propagate
+# Even after showing "Registered", some operations may fail initially
+Write-Host "Waiting 60 seconds for propagation across Azure services..." -ForegroundColor Yellow
+Start-Sleep -Seconds 60
+
+Write-Host "⚠️  If audit policy updates fail with 'Please register Microsoft.Insights'," -ForegroundColor Yellow
+Write-Host "   wait another 30-60 seconds and retry the failed commands." -ForegroundColor Yellow
+
+# Get workspace ID
+$workspaceId = az monitor log-analytics workspace show `
+  --resource-group "db-lam-rg" `
+  --workspace-name "rhcdb-audit-logs" `
+  --query id -o tsv
+
+Write-Host "`n🔍 Enabling audit logging on all SQL servers..." -ForegroundColor Cyan
+Write-Host "Workspace ID: $workspaceId`n" -ForegroundColor Yellow
+
+# Enable auditing on LAM SQL Server
+Write-Host "`n🔍 Enabling audit logging on SQL servers..." -ForegroundColor Cyan
+Write-Host "Configuring rhcdb-lam-sqlsvr..." -ForegroundColor Cyan
+az sql server audit-policy update `
+  --resource-group "db-lam-rg" `
+  --name "rhcdb-lam-sqlsvr" `
+  --state Enabled `
+  --log-analytics-target-state Enabled `
   --log-analytics-workspace-resource-id $workspaceId
+
+Write-Host "✅ LAM server audit enabled" -ForegroundColor Green
+
+# Enable auditing on QA SQL Server
+Write-Host "`nConfiguring rhcdb-qa-sqlsvr..." -ForegroundColor Cyan
+az sql server audit-policy update `
+  --resource-group "db-qa-rg" `
+  --name "rhcdb-qa-sqlsvr" `
+  --state Enabled `
+  --log-analytics-target-state Enabled `
+  --log-analytics-workspace-resource-id $workspaceId
+
+# Note: QA server may fail on first attempt due to provider propagation delay
+# If it fails, wait 30 seconds and retry the QA command above
+Write-Host "✅ QA server audit enabled" -ForegroundColor Green
+
+# Enable auditing on Production SQL Server
+Write-Host "`nConfiguring rhcdb-prod-sqlsvr..." -ForegroundColor Cyan
+az sql server audit-policy update `
+  --resource-group "db-prod-rg" `
+  --name "rhcdb-prod-sqlsvr" `
+  --state Enabled `
+  --log-analytics-target-state Enabled `
+  --log-analytics-workspace-resource-id $workspaceId
+
+Write-Host "✅ Production server audit enabled" -ForegroundColor Green
+
+Write-Host "`n✅ All SQL servers now auditing to rhcdb-audit-logs workspace!" -ForegroundColor Green
+Write-Host "`n📊 View audit logs: Azure Portal → Log Analytics workspace → Logs" -ForegroundColor Cyan
+```
+
+#### Verify Audit Configuration
+
+```powershell
+# Check audit status on all servers
+Write-Host "`n📋 Audit Status:" -ForegroundColor Cyan
+
+Write-Host "`nLAM Server:" -ForegroundColor Yellow
+az sql server audit-policy show `
+  --resource-group "db-lam-rg" `
+  --name "rhcdb-lam-sqlsvr" `
+  --query "{State:state, LogAnalytics:isAzureMonitorTargetEnabled}" -o table
+
+Write-Host "`nQA Server:" -ForegroundColor Yellow
+az sql server audit-policy show `
+  --resource-group "db-qa-rg" `
+  --name "rhcdb-qa-sqlsvr" `
+  --query "{State:state, LogAnalytics:isAzureMonitorTargetEnabled}" -o table
+
+Write-Host "`nProduction Server:" -ForegroundColor Yellow
+az sql server audit-policy show `
+  --resource-group "db-prod-rg" `
+  --name "rhcdb-prod-sqlsvr" `
+  --query "{State:state, LogAnalytics:isAzureMonitorTargetEnabled}" -o table
 ```
 
 ---
 
 ## 🔧 Step 6: Enable Microsoft Defender for SQL
 
-### Via Azure Portal
+**💰 Cost:** $15/server/month × 3 servers = **$45/month**
 
-1. Navigate to SQL Server (`rhc-qa-sqlsvr`)
-2. Click **"Microsoft Defender for Cloud"** under Security
-3. Click **"Enable Microsoft Defender for SQL"**
-4. **Settings:**
-   - **Vulnerability assessment:** Configure storage account (or use default)
-   - **Advanced Threat Protection:** Enabled
-   - **Email notifications:** Add your email
-5. Click **"Save"**
+**⚠️ Recommendation:** 
+- **Production:** Enable immediately (required for HIPAA compliance)
+- **QA:** Enable for pre-production validation
+- **LAM:** Optional (development environment) - can skip to save $15/month
 
-### Via Azure CLI
+**Features:**
+- Vulnerability assessments (security best practices)
+- Advanced threat protection (SQL injection, anomalous access)
+- Security alerts and recommendations
+- Compliance reporting
 
-```bash
-# Enable Microsoft Defender for SQL
-az security pricing create \
-  --name "SqlServers" \
+---
+
+### Enable Microsoft Defender for SQL (Subscription Level)
+
+First, enable Defender at the subscription level (applies to all SQL servers):
+
+#### Via Azure CLI (PowerShell)
+
+```powershell
+# Switch to Database tenant
+az account set --subscription "subs-rhcdb"
+
+Write-Host "`n🛡️ Enabling Microsoft Defender for SQL (subscription level)..." -ForegroundColor Cyan
+
+# Enable Defender for SQL at subscription level
+az security pricing create `
+  --name "SqlServers" `
   --tier "Standard"
 
-# Configure advanced threat protection
-az sql server threat-policy update \
-  --resource-group "rhc-db-qa-rg" \
-  --server "rhc-qa-sqlsvr" \
-  --state Enabled \
-  --email-account-admins Enabled \
-  --email-addresses "ron@recalibratehealthcare.com"
+Write-Host "✅ Microsoft Defender for SQL enabled at subscription level" -ForegroundColor Green
+Write-Host "⚠️  This will cost $15/server/month for all SQL servers in this subscription" -ForegroundColor Yellow
+```
+
+---
+
+### Configure Advanced Threat Protection on Each Server
+
+Now configure threat protection settings for each SQL server:
+
+#### Via Azure CLI (PowerShell) - Complete Script
+
+```powershell
+# Ensure Database tenant context
+az account set --subscription "subs-rhcdb"
+
+$AdminEmail = "ron@recalibratehealthcare.com"
+
+Write-Host "`n🔒 Configuring Advanced Threat Protection on all SQL servers..." -ForegroundColor Cyan
+
+# Configure LAM SQL Server
+Write-Host "`nConfiguring rhcdb-lam-sqlsvr..." -ForegroundColor Cyan
+az sql server threat-policy update `
+  --resource-group "db-lam-rg" `
+  --server "rhcdb-lam-sqlsvr" `
+  --state Enabled `
+  --email-account-admins true `
+  --email-addresses $AdminEmail
+
+Write-Host "✅ LAM server threat protection enabled" -ForegroundColor Green
+
+# Configure QA SQL Server
+Write-Host "`nConfiguring rhcdb-qa-sqlsvr..." -ForegroundColor Cyan
+az sql server threat-policy update `
+  --resource-group "db-qa-rg" `
+  --server "rhcdb-qa-sqlsvr" `
+  --state Enabled `
+  --email-account-admins true `
+  --email-addresses $AdminEmail
+
+Write-Host "✅ QA server threat protection enabled" -ForegroundColor Green
+
+# Configure Production SQL Server
+Write-Host "`nConfiguring rhcdb-prod-sqlsvr..." -ForegroundColor Cyan
+az sql server threat-policy update `
+  --resource-group "db-prod-rg" `
+  --server "rhcdb-prod-sqlsvr" `
+  --state Enabled `
+  --email-account-admins true `
+  --email-addresses $AdminEmail
+
+Write-Host "✅ Production server threat protection enabled" -ForegroundColor Green
+
+Write-Host "`n✅ Microsoft Defender for SQL fully configured!" -ForegroundColor Green
+Write-Host "📧 Security alerts will be sent to: $AdminEmail" -ForegroundColor Cyan
+```
+
+#### Verify Defender Configuration
+
+```powershell
+# Check threat protection status on all servers
+Write-Host "`n📋 Threat Protection Status:" -ForegroundColor Cyan
+
+Write-Host "`nLAM Server:" -ForegroundColor Yellow
+az sql server threat-policy show `
+  --resource-group "db-lam-rg" `
+  --name "rhcdb-lam-sqlsvr" `
+  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
+
+Write-Host "`nQA Server:" -ForegroundColor Yellow
+az sql server threat-policy show `
+  --resource-group "db-qa-rg" `
+  --name "rhcdb-qa-sqlsvr" `
+  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
+
+Write-Host "`nProduction Server:" -ForegroundColor Yellow
+az sql server threat-policy show `
+  --resource-group "db-prod-rg" `
+  --name "rhcdb-prod-sqlsvr" `
+  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
+
+Write-Host "`n📊 View security recommendations: Azure Portal → SQL Server → Microsoft Defender for Cloud" -ForegroundColor Cyan
+```
+
+---
+
+### Optional: Disable Defender on LAM (Save $15/month)
+
+If you want to skip Defender on the LAM development server to save costs:
+
+```powershell
+# Disable threat protection on LAM server only
+az sql server threat-policy update `
+  --resource-group "db-lam-rg" `
+  --server "rhcdb-lam-sqlsvr" `
+  --state Disabled
+
+Write-Host "✅ LAM server threat protection disabled (saves $15/month)" -ForegroundColor Green
+Write-Host "⚠️  QA and Production servers remain protected" -ForegroundColor Yellow
 ```
 
 
