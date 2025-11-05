@@ -1532,15 +1532,32 @@ First, enable Defender at the subscription level (applies to all SQL servers):
 # Switch to Database tenant
 az account set --subscription "subs-rhcdb"
 
-Write-Host "`n🛡️ Enabling Microsoft Defender for SQL (subscription level)..." -ForegroundColor Cyan
+# Register Microsoft.Security provider (required for Defender)
+Write-Host "`n📝 Registering Microsoft.Security provider..." -ForegroundColor Cyan
+az provider register --namespace Microsoft.Security
+
+# Wait for registration to complete
+Write-Host "Waiting for registration..." -ForegroundColor Yellow
+do {
+    $state = az provider show --namespace Microsoft.Security --query "registrationState" -o tsv
+    Write-Host "Provider state: $state" -ForegroundColor Cyan
+    if ($state -ne "Registered") {
+        Start-Sleep -Seconds 15
+    }
+} while ($state -ne "Registered")
+
+Write-Host "✅ Microsoft.Security provider registered" -ForegroundColor Green
+Start-Sleep -Seconds 30
 
 # Enable Defender for SQL at subscription level
+Write-Host "`n🛡️ Enabling Microsoft Defender for SQL (subscription level)..." -ForegroundColor Cyan
+
 az security pricing create `
   --name "SqlServers" `
   --tier "Standard"
 
 Write-Host "✅ Microsoft Defender for SQL enabled at subscription level" -ForegroundColor Green
-Write-Host "⚠️  This will cost $15/server/month for all SQL servers in this subscription" -ForegroundColor Yellow
+Write-Host "⚠️  This will cost $15/server/month (30-day free trial available)" -ForegroundColor Yellow
 ```
 
 ---
@@ -1563,7 +1580,7 @@ Write-Host "`n🔒 Configuring Advanced Threat Protection on all SQL servers..."
 Write-Host "`nConfiguring rhcdb-lam-sqlsvr..." -ForegroundColor Cyan
 az sql server threat-policy update `
   --resource-group "db-lam-rg" `
-  --server "rhcdb-lam-sqlsvr" `
+  --name "rhcdb-lam-sqlsvr" `
   --state Enabled `
   --email-account-admins true `
   --email-addresses $AdminEmail
@@ -1574,7 +1591,7 @@ Write-Host "✅ LAM server threat protection enabled" -ForegroundColor Green
 Write-Host "`nConfiguring rhcdb-qa-sqlsvr..." -ForegroundColor Cyan
 az sql server threat-policy update `
   --resource-group "db-qa-rg" `
-  --server "rhcdb-qa-sqlsvr" `
+  --name "rhcdb-qa-sqlsvr" `
   --state Enabled `
   --email-account-admins true `
   --email-addresses $AdminEmail
@@ -1585,7 +1602,7 @@ Write-Host "✅ QA server threat protection enabled" -ForegroundColor Green
 Write-Host "`nConfiguring rhcdb-prod-sqlsvr..." -ForegroundColor Cyan
 az sql server threat-policy update `
   --resource-group "db-prod-rg" `
-  --server "rhcdb-prod-sqlsvr" `
+  --name "rhcdb-prod-sqlsvr" `
   --state Enabled `
   --email-account-admins true `
   --email-addresses $AdminEmail
@@ -1599,29 +1616,15 @@ Write-Host "📧 Security alerts will be sent to: $AdminEmail" -ForegroundColor 
 #### Verify Defender Configuration
 
 ```powershell
-# Check threat protection status on all servers
-Write-Host "`n📋 Threat Protection Status:" -ForegroundColor Cyan
+# Check Defender subscription-level status
+Write-Host "`n📋 Microsoft Defender Status:" -ForegroundColor Cyan
+az security pricing show --name "SqlServers" --query "{Name:name, Tier:pricingTier, FreeTrialRemaining:freeTrialRemainingTime}" -o table
 
-Write-Host "`nLAM Server:" -ForegroundColor Yellow
-az sql server threat-policy show `
-  --resource-group "db-lam-rg" `
-  --name "rhcdb-lam-sqlsvr" `
-  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
-
-Write-Host "`nQA Server:" -ForegroundColor Yellow
-az sql server threat-policy show `
-  --resource-group "db-qa-rg" `
-  --name "rhcdb-qa-sqlsvr" `
-  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
-
-Write-Host "`nProduction Server:" -ForegroundColor Yellow
-az sql server threat-policy show `
-  --resource-group "db-prod-rg" `
-  --name "rhcdb-prod-sqlsvr" `
-  --query "{State:state, EmailAdmins:emailAccountAdmins, EmailAddresses:emailAddresses}" -o table
-
-Write-Host "`n📊 View security recommendations: Azure Portal → SQL Server → Microsoft Defender for Cloud" -ForegroundColor Cyan
+Write-Host "`n📊 View threat protection settings and security recommendations:" -ForegroundColor Cyan
+Write-Host "   Azure Portal → SQL Server → Security → Microsoft Defender for Cloud" -ForegroundColor Yellow
 ```
+
+**Note:** The Azure CLI does not have a reliable command to show individual server threat policy status. Verify configuration in the Azure Portal.
 
 ---
 
