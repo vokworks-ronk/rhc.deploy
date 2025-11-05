@@ -978,6 +978,100 @@ Repeat the process:
 
 **🔐 Security Note:** Store these credentials in Azure Key Vault (in the QA/Prod tenants) - we'll cover this in Phase 5.
 
+#### Via Azure CLI (PowerShell)
+
+Complete script to create all three app registrations:
+
+```powershell
+# Ensure you're in Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+az account set --subscription "subs-rhcdb"
+
+# Get Database tenant ID
+$DbTenantId = "b62a8921-d524-41af-9807-1057f031ecda"
+
+Write-Host "Creating LAM App Registration..." -ForegroundColor Cyan
+# Create LAM App Registration
+$LamAppId = az ad app create `
+  --display-name "app-lam-db-access" `
+  --sign-in-audience AzureADMyOrg `
+  --query appId -o tsv
+
+# Create service principal for LAM app
+az ad sp create --id $LamAppId
+
+# Create client secret for LAM app (expires in 2 years)
+$LamSecret = az ad app credential reset `
+  --id $LamAppId `
+  --append `
+  --years 2 `
+  --query password -o tsv
+
+Write-Host "`n✅ LAM App Registration Created:" -ForegroundColor Green
+Write-Host "  Application ID: $LamAppId"
+Write-Host "  Tenant ID: $DbTenantId"
+Write-Host "  Client Secret: $LamSecret"
+Write-Host "  ⚠️  SAVE THESE VALUES SECURELY!" -ForegroundColor Yellow
+
+Write-Host "`nCreating QA App Registration..." -ForegroundColor Cyan
+# Create QA App Registration
+$QaAppId = az ad app create `
+  --display-name "app-qa-db-access" `
+  --sign-in-audience AzureADMyOrg `
+  --query appId -o tsv
+
+az ad sp create --id $QaAppId
+
+$QaSecret = az ad app credential reset `
+  --id $QaAppId `
+  --append `
+  --years 2 `
+  --query password -o tsv
+
+Write-Host "`n✅ QA App Registration Created:" -ForegroundColor Green
+Write-Host "  Application ID: $QaAppId"
+Write-Host "  Tenant ID: $DbTenantId"
+Write-Host "  Client Secret: $QaSecret"
+
+Write-Host "`nCreating Production App Registration..." -ForegroundColor Cyan
+# Create Production App Registration
+$ProdAppId = az ad app create `
+  --display-name "app-prod-db-access" `
+  --sign-in-audience AzureADMyOrg `
+  --query appId -o tsv
+
+az ad sp create --id $ProdAppId
+
+$ProdSecret = az ad app credential reset `
+  --id $ProdAppId `
+  --append `
+  --years 2 `
+  --query password -o tsv
+
+Write-Host "`n✅ Production App Registration Created:" -ForegroundColor Green
+Write-Host "  Application ID: $ProdAppId"
+Write-Host "  Tenant ID: $DbTenantId"
+Write-Host "  Client Secret: $ProdSecret"
+
+Write-Host "`n📋 Summary - Save These Credentials:" -ForegroundColor Cyan
+Write-Host "================================================"
+Write-Host "LAM:"
+Write-Host "  App ID: $LamAppId"
+Write-Host "  Secret: $LamSecret"
+Write-Host ""
+Write-Host "QA:"
+Write-Host "  App ID: $QaAppId"
+Write-Host "  Secret: $QaSecret"
+Write-Host ""
+Write-Host "Production:"
+Write-Host "  App ID: $ProdAppId"
+Write-Host "  Secret: $ProdSecret"
+Write-Host ""
+Write-Host "Tenant ID (all): $DbTenantId"
+Write-Host "================================================"
+Write-Host "⚠️  Store these in Azure Key Vault immediately!" -ForegroundColor Yellow
+```
+
 ---
 
 ### 4.2: Create Security Groups for App Access
@@ -1023,6 +1117,82 @@ Repeat:
 - **Description:** `Applications with access to Production databases`
 - **Add member:** `app-prod-db-access`
 
+#### Via Azure CLI (PowerShell)
+
+Complete script to create security groups and add app registrations:
+
+```powershell
+# Ensure you're in Database tenant
+az login --tenant rhcdb.onmicrosoft.com
+
+# Get service principal object IDs (NOT app IDs!)
+# Service principals are created when you do "az ad sp create"
+Write-Host "Getting service principal IDs..." -ForegroundColor Cyan
+$LamSpId = az ad sp list --display-name "app-lam-db-access" --query "[0].id" -o tsv
+$QaSpId = az ad sp list --display-name "app-qa-db-access" --query "[0].id" -o tsv
+$ProdSpId = az ad sp list --display-name "app-prod-db-access" --query "[0].id" -o tsv
+
+Write-Host "  LAM SP ID: $LamSpId"
+Write-Host "  QA SP ID: $QaSpId"
+Write-Host "  Prod SP ID: $ProdSpId"
+
+# Create LAM security group
+Write-Host "`nCreating LAM security group..." -ForegroundColor Cyan
+$LamGroupId = az ad group create `
+  --display-name "db-lam-app-users" `
+  --mail-nickname "db-lam-app-users" `
+  --description "Applications with access to LAM databases" `
+  --query id -o tsv
+
+# Add LAM app to group
+az ad group member add `
+  --group $LamGroupId `
+  --member-id $LamSpId
+
+Write-Host "✅ Created group: db-lam-app-users (ID: $LamGroupId)" -ForegroundColor Green
+
+# Create QA security group
+Write-Host "`nCreating QA security group..." -ForegroundColor Cyan
+$QaGroupId = az ad group create `
+  --display-name "db-qa-app-users" `
+  --mail-nickname "db-qa-app-users" `
+  --description "Applications with access to QA databases" `
+  --query id -o tsv
+
+az ad group member add `
+  --group $QaGroupId `
+  --member-id $QaSpId
+
+Write-Host "✅ Created group: db-qa-app-users (ID: $QaGroupId)" -ForegroundColor Green
+
+# Create Production security group
+Write-Host "`nCreating Production security group..." -ForegroundColor Cyan
+$ProdGroupId = az ad group create `
+  --display-name "db-prod-app-users" `
+  --mail-nickname "db-prod-app-users" `
+  --description "Applications with access to Production databases" `
+  --query id -o tsv
+
+az ad group member add `
+  --group $ProdGroupId `
+  --member-id $ProdSpId
+
+Write-Host "✅ Created group: db-prod-app-users (ID: $ProdGroupId)" -ForegroundColor Green
+
+# Verify group memberships
+Write-Host "`n📋 Verifying group memberships:" -ForegroundColor Cyan
+Write-Host "LAM group members:"
+az ad group member list --group "db-lam-app-users" --query "[].displayName" -o table
+
+Write-Host "`nQA group members:"
+az ad group member list --group "db-qa-app-users" --query "[].displayName" -o table
+
+Write-Host "`nProduction group members:"
+az ad group member list --group "db-prod-app-users" --query "[].displayName" -o table
+
+Write-Host "`n✅ All security groups created and app registrations added!" -ForegroundColor Green
+```
+
 ---
 
 ### 4.3: Register Groups as Database Users
@@ -1032,26 +1202,87 @@ Now we need to tell each database that these groups exist and what they can do.
 **⚠️ Prerequisites:**
 - SQL Servers and databases must be created (Step 2 & 3)
 - You must be an Entra admin on the SQL Server
-- Install Azure Data Studio or sqlcmd tool
+- SQL Server Management Studio (SSMS) - **RECOMMENDED** for reliable authentication
+- Alternative: VS Code with mssql extension or Azure Portal Query Editor
 
 ---
 
-#### Connect to Database as Entra Admin
+#### 🔐 CRITICAL: Tenant Context for Authentication
 
-**Option 1: Azure Data Studio (Recommended)**
+When connecting to databases in the **Database tenant**, you MUST authenticate with the Database tenant identity, not your work tenant identity.
 
-1. **Download Azure Data Studio:** https://aka.ms/azuredatastudio
-2. **Connect to LAM Database:**
-   - Server: `rhcdb-lam-sqlsvr.database.windows.net`
-   - Authentication: **Microsoft Entra ID - Universal with MFA**
-   - Database: `lam_db`
+**Why This Matters:**
+- You have the same username (ron@recalibratehealthcare.com) in multiple tenants
+- Each tenant has its own MFA configuration
+- **Work Tenant** MFA ≠ **Database Tenant** MFA
+- SQL Server is in the Database tenant, so you need Database tenant authentication
+
+**Tenant ID:** `b62a8921-d524-41af-9807-1057f031ecda` (rhcdb.onmicrosoft.com)
+
+---
+
+#### Connect to Database with SSMS (RECOMMENDED)
+
+**Why SSMS?** It properly handles tenant-specific authentication and MFA, unlike VS Code which may authenticate in the wrong tenant context.
+
+**Setup:**
+
+1. **Download SSMS** (if not installed):
+   - https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms
+
+2. **Connect:**
+   - **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
+   - **Authentication:** `Azure Active Directory - Universal with MFA`
+   - **User name:** `ron_recalibratehealthcare.com#EXT#@rhcdb.onmicrosoft.com`
    - Click **Connect**
+
+3. **Authenticate:**
+   - Login dialog appears (generic, no tenant branding)
+   - **Use the Database tenant MFA** when prompted
+   - Select `lam_db` from the database dropdown
+
+---
+
+#### Connect to Database with VS Code (Alternative)
+
+**⚠️ Known Issue:** VS Code mssql extension may authenticate in your default tenant (work tenant) instead of the Database tenant, causing AADSTS50076 errors. If you encounter authentication issues, use SSMS instead.
+
+**Setup (First Time):**
+
+1. **Install mssql extension** (if not already installed):
+   - Press `Ctrl+Shift+X`
+   - Search for `ms-mssql.mssql`
+   - Install **SQL Server (mssql)** by Microsoft
+
+2. **Create new connection:**
+   - Press `Ctrl+Shift+P` → type `MSSQL: Connect`
+   - Or click the plug icon in the mssql sidebar
+   
+3. **Connection Settings:**
+   - **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
+   - **Database name:** `lam_db`
+   - **Authentication Type:** `Microsoft Entra ID - Universal with MFA support`
+   - **Tenant ID:** `b62a8921-d524-41af-9807-1057f031ecda` *(if prompted)*
+   - **Account:** Select your account
+   - **Profile Name (optional):** `LAM Database`
+
+4. **Authenticate:**
+   - Click **Sign in** button
+   - Browser opens for MFA
+   - **Use Database tenant MFA** when prompted
+   - Return to VS Code
+
+**To Run Queries:**
+- Create a new `.sql` file or open an existing one
+- Select the connection from the status bar (bottom right)
+- Write your query
+- Press `Ctrl+Shift+E` to execute (or right-click → Execute Query)
 
 ---
 
 #### Register Group in LAM Database
 
-Once connected to `lam_db`, run these SQL commands:
+Connect to `lam_db` and run these SQL commands:
 
 ```sql
 -- Create user for the security group
