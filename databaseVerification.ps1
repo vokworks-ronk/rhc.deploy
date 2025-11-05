@@ -71,7 +71,7 @@ $appRegCount = 3
 
 Write-Host "`n✓ Resource Groups: 3/3 found" -ForegroundColor Green
 Write-Host "✓ SQL Servers: 3/3 found (LAM, QA, Prod)" -ForegroundColor Green
-Write-Host "✓ Databases: 5/5 found (lam_db, qa_corp_db, qa_hm2_db, prod_corp_db, prod_hm2_db)" -ForegroundColor Green
+Write-Host "✓ Databases: 5/5 found (lam_db, qa_corp_db, qa_hp2_db, prod_corp_db, prod_hp2_db)" -ForegroundColor Green
 
 if ($adminGroups.Count -eq 3) {
     Write-Host "✓ Admin Security Groups: 3/3 found" -ForegroundColor Green

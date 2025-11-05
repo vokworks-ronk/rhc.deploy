@@ -20,12 +20,12 @@ This phase sets up the isolated Database tenant with **three separate environmen
 2. **QA (Quality Assurance)** - Testing Environment
    - Resource Group: `db-qa-rg`
    - SQL Server: `rhcdb-qa-sqlsvr`
-   - Databases: `qa_corp_db`, `qa_hm2_db`
+   - Databases: `qa_corp_db`, `qa_hp2_db`
 
 3. **Production** - Live Environment
    - Resource Group: `db-prod-rg`
    - SQL Server: `rhcdb-prod-sqlsvr`
-   - Databases: `prod_corp_db`, `prod_hm2_db`
+   - Databases: `prod_corp_db`, `prod_hp2_db`
 
 **Key Security Principles:**
 - ✅ Isolated tenant (no External ID identities)
@@ -62,7 +62,7 @@ This phase sets up the isolated Database tenant with **three separate environmen
 - [ ] Disable SQL authentication
 - [ ] Configure firewall rules
 - [ ] Create `qa_corp_db` database
-- [ ] Create `qa_hm2_db` database
+- [ ] Create `qa_hp2_db` database
 
 ### Production Environment Setup
 - [ ] Create SQL Server (`rhcdb-prod-sqlsvr`)
@@ -70,7 +70,7 @@ This phase sets up the isolated Database tenant with **three separate environmen
 - [ ] Disable SQL authentication
 - [ ] Configure firewall rules
 - [ ] Create `prod_corp_db` database
-- [ ] Create `prod_hm2_db` database
+- [ ] Create `prod_hp2_db` database
 
 ### Security Configuration (All Environments)
 - [ ] Enable Advanced Data Security
@@ -125,9 +125,9 @@ This phase sets up the isolated Database tenant with **three separate environmen
 |-------------|--------|---------------|------|------|---------|--------|
 | LAM | `rhcdb-lam-sqlsvr` | `lam_db` | Standard S0 | 10 DTU | Dev/Load Testing | ⬜ |
 | QA | `rhcdb-qa-sqlsvr` | `qa_corp_db` | Standard S0 | 10 DTU | QA Corporate data | ⬜ |
-| QA | `rhcdb-qa-sqlsvr` | `qa_hm2_db` | Standard S0 | 10 DTU | QA HM2 app data | ⬜ |
+| QA | `rhcdb-qa-sqlsvr` | `qa_hp2_db` | Standard S0 | 10 DTU | QA HP2 app data | ⬜ |
 | Production | `rhcdb-prod-sqlsvr` | `prod_corp_db` | Standard S0 | 10 DTU | Prod Corporate data | ⬜ |
-| Production | `rhcdb-prod-sqlsvr` | `prod_hm2_db` | Standard S0 | 10 DTU | Prod HM2 app data | ⬜ |
+| Production | `rhcdb-prod-sqlsvr` | `prod_hp2_db` | Standard S0 | 10 DTU | Prod HP2 app data | ⬜ |
 
 ---
 
@@ -809,15 +809,15 @@ az sql server list --query "[].{Name:name, ResourceGroup:resourceGroup, Location
 
 ---
 
-#### Create qa_hm2_db
+#### Create qa_hp2_db
 
-Repeat for the HM2 application database in Azure Portal with similar settings.
+Repeat for the HP2 application database in Azure Portal with similar settings.
 
 ---
 
 ### 3.3: Create Production Databases
 
-Create `prod_corp_db` and `prod_hm2_db` in Azure Portal following same pattern as QA databases.
+Create `prod_corp_db` and `prod_hp2_db` in Azure Portal following same pattern as QA databases.
 
 **Note:** Production databases should use **Geo-redundant** backup storage for disaster recovery.
 
@@ -859,12 +859,12 @@ az sql db create `
 az sql db create `
   --resource-group "db-qa-rg" `
   --server "rhcdb-qa-sqlsvr" `
-  --name "qa_hm2_db" `
+  --name "qa_hp2_db" `
   --edition "Standard" `
   --capacity 10 `
   --max-size 250GB `
   --backup-storage-redundancy "Local" `
-  --tags Environment=QA Purpose=HM2 Project=RHC
+  --tags Environment=QA Purpose=HP2 Project=RHC
 
 # Create Production Databases
 Write-Host "Creating Production databases..." -ForegroundColor Cyan
@@ -881,12 +881,12 @@ az sql db create `
 az sql db create `
   --resource-group "db-prod-rg" `
   --server "rhcdb-prod-sqlsvr" `
-  --name "prod_hm2_db" `
+  --name "prod_hp2_db" `
   --edition "Standard" `
   --capacity 10 `
   --max-size 250GB `
   --backup-storage-redundancy "Geo" `
-  --tags Environment=Production Purpose=HM2 Project=RHC
+  --tags Environment=Production Purpose=HP2 Project=RHC
 
 # Verify all databases
 Write-Host "`n✅ All databases created!" -ForegroundColor Green
@@ -1281,11 +1281,11 @@ GRANT EXECUTE TO [db-qa-app-users];
 SELECT name, type_desc FROM sys.database_principals WHERE name = 'db-qa-app-users';
 ```
 
-**For qa_hm2_db:**
+**For qa_hp2_db:**
 
 ```sql
--- Connect to qa_hm2_db
-USE qa_hm2_db;
+-- Connect to qa_hp2_db
+USE qa_hp2_db;
 GO
 
 -- Create user and grant permissions
@@ -1317,10 +1317,10 @@ GRANT EXECUTE TO [db-prod-app-users];
 SELECT name, type_desc FROM sys.database_principals WHERE name = 'db-prod-app-users';
 ```
 
-**For prod_hm2_db:**
+**For prod_hp2_db:**
 
 ```sql
-USE prod_hm2_db;
+USE prod_hp2_db;
 GO
 
 CREATE USER [db-prod-app-users] FROM EXTERNAL PROVIDER;
@@ -1347,8 +1347,8 @@ SELECT name, type_desc FROM sys.database_principals WHERE name = 'db-prod-app-us
 | Group Name | Members | Database Users Created In |
 |------------|---------|---------------------------|
 | `db-lam-app-users` | `app-lam-db-access` | `lam_db` |
-| `db-qa-app-users` | `app-qa-db-access` | `qa_corp_db`, `qa_hm2_db` |
-| `db-prod-app-users` | `app-prod-db-access` | `prod_corp_db`, `prod_hm2_db` |
+| `db-qa-app-users` | `app-qa-db-access` | `qa_corp_db`, `qa_hp2_db` |
+| `db-prod-app-users` | `app-prod-db-access` | `prod_corp_db`, `prod_hp2_db` |
 
 **Database Users (registered in each database):**
 - All users have: `db_datareader` + `db_datawriter` + `EXECUTE` permissions
@@ -1802,11 +1802,11 @@ TrustServerCertificate=False;
 Connection Timeout=30;
 ```
 
-**QA Environment - HM2 Database:**
+**QA Environment - HP2 Database:**
 
 ```
 Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;
-Database=qa_hm2_db;
+Database=qa_hp2_db;
 Authentication=Active Directory Service Principal;
 User ID=<qa-app-id-here>;
 Password=<qa-secret-here>;
@@ -1828,11 +1828,11 @@ TrustServerCertificate=False;
 Connection Timeout=30;
 ```
 
-**Production Environment - HM2 Database:**
+**Production Environment - HP2 Database:**
 
 ```
 Server=tcp:rhcdb-prod-sqlsvr.database.windows.net,1433;
-Database=prod_hm2_db;
+Database=prod_hp2_db;
 Authentication=Active Directory Service Principal;
 User ID=<prod-app-id-here>;
 Password=<prod-secret-here>;
@@ -2124,11 +2124,11 @@ Database administrators need to connect with their Entra ID accounts for managem
 
 **Connect to QA SQL Server:**
 - **Server name:** `rhcdb-qa-sqlsvr.database.windows.net`
-- **Database:** `qa_corp_db` or `qa_hm2_db`
+- **Database:** `qa_corp_db` or `qa_hp2_db`
 
 **Connect to Production SQL Server:**
 - **Server name:** `rhcdb-prod-sqlsvr.database.windows.net`
-- **Database:** `prod_corp_db` or `prod_hm2_db`
+- **Database:** `prod_corp_db` or `prod_hp2_db`
 
 **Connection String Format (for applications):**
 
@@ -2286,17 +2286,17 @@ using (SqlConnection connection = new SqlConnection(connectionString))
 |-------------|--------|----------|------------------|-------|
 | LAM | `rhcdb-lam-sqlsvr.database.windows.net` | `lam_db` | `app-lam-db-access` | `db-lam-app-users` |
 | QA (Corp) | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db` | `app-qa-db-access` | `db-qa-app-users` |
-| QA (HM2) | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_hm2_db` | `app-qa-db-access` | `db-qa-app-users` |
+| QA (HP2) | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_hp2_db` | `app-qa-db-access` | `db-qa-app-users` |
 | Prod (Corp) | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_corp_db` | `app-prod-db-access` | `db-prod-app-users` |
-| Prod (HM2) | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_hm2_db` | `app-prod-db-access` | `db-prod-app-users` |
+| Prod (HP2) | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_hp2_db` | `app-prod-db-access` | `db-prod-app-users` |
 
 #### Admin Connection Strings (Entra ID Users)
 
 | Environment | Server | Database | Admin Group | Admin Members |
 |-------------|--------|----------|-------------|---------------|
 | LAM | `rhcdb-lam-sqlsvr.database.windows.net` | `lam_db` | `db-lam-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
-| QA | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db`, `qa_hm2_db` | `db-qa-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
-| Production | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_corp_db`, `prod_hm2_db` | `db-prod-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
+| QA | `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db`, `qa_hp2_db` | `db-qa-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
+| Production | `rhcdb-prod-sqlsvr.database.windows.net` | `prod_corp_db`, `prod_hp2_db` | `db-prod-sqlsvr-admin` | Ron, Mike, Dave, Bruce |
 
 **Database Tenant ID (all environments):** `b62a8921-d524-41af-9807-1057f031ecda`
 
@@ -2370,7 +2370,7 @@ db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
 ```
 db-server: rhcdb-qa-sqlsvr.database.windows.net
 db-corp-name: qa_corp_db
-db-hm2-name: qa_hm2_db
+db-HP2-name: qa_hp2_db
 db-app-id: <Application ID from app-qa-db-access>
 db-app-secret: <Client secret from app-qa-db-access>
 db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
@@ -2380,7 +2380,7 @@ db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
 ```
 db-server: rhcdb-prod-sqlsvr.database.windows.net
 db-corp-name: prod_corp_db
-db-hm2-name: prod_hm2_db
+db-HP2-name: prod_hp2_db
 db-app-id: <Application ID from app-prod-db-access>
 db-app-secret: <Client secret from app-prod-db-access>
 db-tenant-id: b62a8921-d524-41af-9807-1057f031ecda
@@ -2590,7 +2590,7 @@ $issues = @()
 
 Write-Host "`n✓ Resource Groups: 3/3 found" -ForegroundColor Green
 Write-Host "✓ SQL Servers: 3/3 found (LAM, QA, Prod)" -ForegroundColor Green
-Write-Host "✓ Databases: 5/5 found (lam_db, qa_corp_db, qa_hm2_db, prod_corp_db, prod_hm2_db)" -ForegroundColor Green
+Write-Host "✓ Databases: 5/5 found (lam_db, qa_corp_db, qa_hp2_db, prod_corp_db, prod_hp2_db)" -ForegroundColor Green
 
 if ($adminGroups.Count -eq 3) {
     Write-Host "✓ Admin Security Groups: 3/3 found" -ForegroundColor Green
@@ -2894,8 +2894,8 @@ WHERE dp.name = 'db-qa-app-users';
 
 -- Expected: db-qa-app-users exists with db_datareader, db_datawriter
 
--- Check qa_hm2_db
-USE qa_hm2_db;
+-- Check qa_hp2_db
+USE qa_hp2_db;
 GO
 
 SELECT name, type_desc, authentication_type_desc 
@@ -2928,8 +2928,8 @@ JOIN sys.database_principals dp ON drm.member_principal_id = dp.principal_id
 JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id
 WHERE dp.name = 'db-prod-app-users';
 
--- Check prod_hm2_db
-USE prod_hm2_db;
+-- Check prod_hp2_db
+USE prod_hp2_db;
 GO
 
 SELECT name, type_desc, authentication_type_desc 
@@ -3074,7 +3074,7 @@ Run through this checklist to ensure everything is configured correctly:
 ### Azure Resources
 - [ ] 3 Resource groups created (db-lam-rg, db-qa-rg, db-prod-rg)
 - [ ] 3 SQL Servers created (lam-sqlsvr, qa-sqlsvr, prod-sqlsvr)
-- [ ] 5 Databases created (lam_db, qa_corp_db, qa_hm2_db, prod_corp_db, prod_hm2_db)
+- [ ] 5 Databases created (lam_db, qa_corp_db, qa_hp2_db, prod_corp_db, prod_hp2_db)
 - [ ] All SQL Servers have System-Assigned Managed Identity enabled
 - [ ] All SQL Servers have Entra-only authentication enabled
 - [ ] Firewall rules allow Azure services (0.0.0.0)
@@ -3095,9 +3095,9 @@ Run through this checklist to ensure everything is configured correctly:
 ### Database Users
 - [ ] db-lam-app-users registered in lam_db
 - [ ] db-qa-app-users registered in qa_corp_db
-- [ ] db-qa-app-users registered in qa_hm2_db
+- [ ] db-qa-app-users registered in qa_hp2_db
 - [ ] db-prod-app-users registered in prod_corp_db
-- [ ] db-prod-app-users registered in prod_hm2_db
+- [ ] db-prod-app-users registered in prod_hp2_db
 - [ ] All groups have db_datareader + db_datawriter + EXECUTE permissions
 
 ### Connectivity Tests
@@ -3186,9 +3186,9 @@ Write-Host "`nStep 4: Verifying Databases..." -ForegroundColor Cyan
 $dbConfigs = @(
     @{Server="lam-sqlsvr"; RG="db-lam-rg"; DB="lam_db"},
     @{Server="qa-sqlsvr"; RG="db-qa-rg"; DB="qa_corp_db"},
-    @{Server="qa-sqlsvr"; RG="db-qa-rg"; DB="qa_hm2_db"},
+    @{Server="qa-sqlsvr"; RG="db-qa-rg"; DB="qa_hp2_db"},
     @{Server="prod-sqlsvr"; RG="db-prod-rg"; DB="prod_corp_db"},
-    @{Server="prod-sqlsvr"; RG="db-prod-rg"; DB="prod_hm2_db"}
+    @{Server="prod-sqlsvr"; RG="db-prod-rg"; DB="prod_hp2_db"}
 )
 
 foreach ($config in $dbConfigs) {
@@ -3442,7 +3442,7 @@ az monitor diagnostic-settings create \
   ]'
 
 # Repeat for other databases...
-# qa_corp_db, qa_hm2_db, prod_corp_db, prod_hm2_db
+# qa_corp_db, qa_hp2_db, prod_corp_db, prod_hp2_db
 ```
 
 ---
@@ -3569,8 +3569,8 @@ AzureDiagnostics
 
 **Expected results:**
 - `app-lam-db-access` connecting to `lam_db`
-- `app-qa-db-access` connecting to `qa_corp_db` and `qa_hm2_db`
-- `app-prod-db-access` connecting to `prod_corp_db` and `prod_hm2_db`
+- `app-qa-db-access` connecting to `qa_corp_db` and `qa_hp2_db`
+- `app-prod-db-access` connecting to `prod_corp_db` and `prod_hp2_db`
 
 ---
 
