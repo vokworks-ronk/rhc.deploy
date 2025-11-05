@@ -2108,17 +2108,27 @@ Database administrators need to connect with their Entra ID accounts for managem
 
 ---
 
-#### SQL Server Management Studio (SSMS)
+#### SQL Server Management Studio (SSMS) - **RECOMMENDED**
+
+**Why SSMS?** Properly handles tenant-specific authentication and MFA for cross-tenant scenarios.
 
 **Connect to LAM SQL Server:**
 
-1. **Open SSMS**
+1. **Download SSMS** (if not installed): https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms
 2. **Server name:** `rhcdb-lam-sqlsvr.database.windows.net`
-3. **Authentication:** `Microsoft Entra MFA`
-4. **Login:** `ron@recalibratehealthcare.com` (or your admin account)
-5. **Database:** `lam_db` (or leave default)
-6. **Encrypt connection:** ✅ Checked
-7. Click **Connect**
+3. **Authentication:** `Azure Active Directory - Universal with MFA`
+4. **User name:** `ron_recalibratehealthcare.com#EXT#@rhcdb.onmicrosoft.com` (your Database tenant identity)
+5. Click **Connect**
+6. **Authenticate:** Use Database tenant MFA when prompted
+7. **Select Database:** Choose `lam_db` from dropdown
+
+**Connect to QA SQL Server:**
+- **Server name:** `rhcdb-qa-sqlsvr.database.windows.net`
+- **Database:** `qa_corp_db` or `qa_hm2_db`
+
+**Connect to Production SQL Server:**
+- **Server name:** `rhcdb-prod-sqlsvr.database.windows.net`
+- **Database:** `prod_corp_db` or `prod_hm2_db`
 
 **Connection String Format (for applications):**
 
@@ -2141,23 +2151,22 @@ TrustServerCertificate=False;
 
 ---
 
-#### Azure Data Studio
+#### VS Code with mssql Extension (Alternative)
 
-**Connect as Admin:**
+**⚠️ Note:** VS Code mssql extension may have tenant context authentication issues (see Step 4.3). Use SSMS for reliable connections.
 
-1. **Open Azure Data Studio**
-2. **New Connection**
-3. **Connection type:** Microsoft SQL Server
-4. **Server:** `rhcdb-qa-sqlsvr.database.windows.net`
-5. **Authentication type:** `Microsoft Entra ID - Universal with MFA support`
-6. **Account:** Select your admin account (or click "Add an account")
-7. **Database:** `qa_corp_db` (or \<Default\>)
-8. **Encrypt:** `Mandatory (True)`
-9. **Trust server certificate:** `False`
-10. **Connection name:** `QA SQL Server (Admin)`
-11. Click **Connect**
+**If using VS Code:**
 
-**Pro Tip:** Save this connection profile for quick access!
+1. **Install extension:** `ms-mssql.mssql`
+2. **Create Connection:**
+   - Server: `rhcdb-qa-sqlsvr.database.windows.net`
+   - Authentication: `Microsoft Entra ID - Universal with MFA support`
+   - Tenant ID: `b62a8921-d524-41af-9807-1057f031ecda` *(Database tenant)*
+   - Database: `qa_corp_db`
+3. **Sign in:** Use Database tenant MFA
+4. **Save Profile:** For quick access
+
+**Known Issue:** Extension may authenticate in wrong tenant context. If you encounter AADSTS50076 errors, use SSMS instead.
 
 ---
 
@@ -2295,6 +2304,50 @@ using (SqlConnection connection = new SqlConnection(connectionString))
 - **Interactive (MFA):** `Active Directory Interactive` or `Active Directory Universal with MFA`
 - **Service Principal:** `Active Directory Service Principal` (for applications only)
 - **Access Token:** Use Azure CLI/SDK to get token, pass to connection
+
+---
+
+### 7.9: App Registration Credentials Reference
+
+**⚠️ Important:** Client secrets are sensitive! Store in Azure Key Vault in production.
+
+Use these Application IDs in your connection strings:
+
+```powershell
+# Retrieve App Registration IDs from Azure
+az account set --subscription "subs-rhcdb"
+
+# LAM App Registration
+az ad app list --display-name "app-lam-db-access" --query "[0].{Name:displayName, AppId:appId, TenantId:publisherDomain}" -o table
+
+# QA App Registration
+az ad app list --display-name "app-qa-db-access" --query "[0].{Name:displayName, AppId:appId, TenantId:publisherDomain}" -o table
+
+# Production App Registration  
+az ad app list --display-name "app-prod-db-access" --query "[0].{Name:displayName, AppId:appId, TenantId:publisherDomain}" -o table
+```
+
+**Record your Application (Client) IDs here (from Step 4.1 output):**
+
+| Environment | App Registration Name | Application (Client) ID | Client Secret | Status |
+|-------------|----------------------|------------------------|---------------|--------|
+| LAM | `app-lam-db-access` | `<paste-app-id-here>` | Saved in Key Vault | ⬜ |
+| QA | `app-qa-db-access` | `<paste-app-id-here>` | Saved in Key Vault | ⬜ |
+| Production | `app-prod-db-access` | `<paste-app-id-here>` | Saved in Key Vault | ⬜ |
+
+**Example Connection String (replace placeholders):**
+```
+Server=tcp:rhcdb-lam-sqlsvr.database.windows.net,1433;
+Database=lam_db;
+Authentication=Active Directory Service Principal;
+User ID=<your-lam-app-id-from-table-above>;
+Password=<your-lam-client-secret>;
+Encrypt=True;
+TrustServerCertificate=False;
+Connection Timeout=30;
+```
+
+**✅ Step 7 Complete!** Connection strings documented, DBA tools configured, and credentials referenced.
 
 ---
 
