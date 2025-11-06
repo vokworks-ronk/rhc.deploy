@@ -11,9 +11,11 @@
 This phase creates new Azure subscriptions for each tenant and links them to the central billing account under `recalibratehealthcare.com`.
 
 **Subscriptions to Create:**
-1. **QA Subscription** → `rhc-qa-sub` (for `rhcqa.onmicrosoft.com`)
-2. **Production Subscription** → `rhc-prod-sub` (for `rhcprod.onmicrosoft.com`)
-3. **Database Subscription** → `rhc-db-sub` (for `rhcdb.onmicrosoft.com`)
+1. **QA Subscription** → `subs-rhcqa` (for `rhcqa.onmicrosoft.com`)
+2. **Production Subscription** → `subs-rhcprod` (for `rhcprod.onmicrosoft.com`)
+3. **Database Subscription** → `subs-rhcdbase` (for `rhcdbase.onmicrosoft.com`)
+
+> **⚠️ DEPRECATED:** The original database subscription `subs-rhcdb` was cancelled after the `rhcdb.onmicrosoft.com` tenant (CIAM type) was found incompatible with SQL Server.
 
 **Benefits:**
 - Cost isolation and tracking per environment
@@ -33,7 +35,8 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 ### Subscription Creation
 - [X] Create QA Subscription (`subs-rhcqa`)
 - [X] Create Production Subscription (`subs-rhcprod`)
-- [X] Create Database Subscription (`subs-rhcdb`)
+- [X] ~~Create Database Subscription (`subs-rhcdb`)~~ **CANCELLED**
+- [X] Create Database Subscription (`subs-rhcdbase`)
 
 ### Post-Creation Configuration
 - [ ] Assign Ron as Owner on all subscriptions
@@ -54,7 +57,8 @@ This phase creates new Azure subscriptions for each tenant and links them to the
 |-------------------|--------|-----------------|---------------|--------|
 | `subs-rhcqa` | `rhcqa.onmicrosoft.com` | `6991b88f-785e-4e03-bac3-e6721b76140b` | `2025-11-03` | ✅ |
 | `subs-rhcprod` | `rhcprod.onmicrosoft.com` | `a1b7a5b1-6a3b-4bb4-a322-785bf70ed37a` | `2025-11-03` | ✅ |
-| `subs-rhcdb` | `rhcdb.onmicrosoft.com` | `d2d3adf5-0ad7-41f5-853e-0a99cc123733` | `2025-11-03` | ✅ |
+| ~~`subs-rhcdb`~~ | ~~`rhcdb.onmicrosoft.com`~~ | ~~`d2d3adf5-0ad7-41f5-853e-0a99cc123733`~~ | ~~`2025-11-03`~~ | ❌ **CANCELLED** |
+| `subs-rhcdbase` | `rhcdbase.onmicrosoft.com` | `a73a2d39-598b-4671-a3a6-2028c59f3d40` | `2025-11-05` | ✅ |
 
 ---
 
@@ -138,9 +142,9 @@ Now we'll transfer each subscription to its intended tenant.
 
 #### 3. Transfer Database Subscription
 
-1. Go to **Subscriptions** → **`rhc-db-sub`**
+1. Go to **Subscriptions** → **`subs-rhcdbase`**
 2. Click **"Change directory"**
-3. **Target directory:** Select `rhcdb.onmicrosoft.com` (Tenant ID: `b62a8921-d524-41af-9807-1057f031ecda`)
+3. **Target directory:** Select `rhcdbase.onmicrosoft.com` (Tenant ID: `4ed17c8b-26b0-4be9-a189-768c67fd03f5`)
 4. Click **"Change"**
 5. ⏳ Wait for transfer
 
@@ -163,8 +167,8 @@ Now we'll transfer each subscription to its intended tenant.
 
 #### 3. Check Database Tenant
 
-1. Switch to `rhcdb.onmicrosoft.com`
-2. Verify `rhc-db-sub` appears
+1. Switch to `rhcdbase.onmicrosoft.com`
+2. Verify `subs-rhcdbase` appears
 3. Verify Owner access
 
 ---

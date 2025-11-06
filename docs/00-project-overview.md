@@ -153,31 +153,35 @@
 
 #### **1. QA Tenant (External ID)**
 - **Domain:** `rhcqa.onmicrosoft.com`
-- **Type:** Microsoft Entra External ID (or Workforce with External ID features)
+- **Tenant ID:** `2604fd9a-93a6-448e-bdc9-25e3c2d671a2`
+- **Type:** Microsoft Entra External ID
 - **Purpose:** QA/testing environment for HP2 and SMX
 - **Custom Domains:** 
   - `hp2-qa.recalibratex.net`
   - `smx-qa.recalibratex.net`
 - **Access:** External identities (customer users)
-- **Status:** TO BE CREATED
+- **Status:** ✅ CREATED
 
 #### **2. Production Tenant (External ID)**
 - **Domain:** `rhcprod.onmicrosoft.com`
-- **Type:** Microsoft Entra External ID (or Workforce with External ID features)
+- **Tenant ID:** `62b88a20-73fe-4b74-bed6-a2658d665565`
+- **Type:** Microsoft Entra External ID
 - **Purpose:** Production environment for HP2 and SMX
 - **Custom Domains:** 
   - `hp2.recalibratex.net`
   - `smx.recalibratex.net`
 - **Access:** External identities (customer users)
-- **Status:** TO BE CREATED (after QA is stable)
+- **Status:** ✅ CREATED
 
 #### **3. Database Tenant**
-- **Domain:** `rhcdbcore.onmicrosoft.com`
-- **Type:** Microsoft Entra ID (Workforce)
+- **Domain:** `rhcdbase.onmicrosoft.com`
+- **Tenant ID:** `4ed17c8b-26b0-4be9-a189-768c67fd03f5`
+- **Type:** Microsoft Entra ID (Workforce/AAD)
 - **Purpose:** Isolated tenant for QA and Production databases
 - **Access:** Restricted to IT accounts and service principals ONLY
 - **Security:** No external identities or app registrations permitted
-- **Status:** TO BE CREATED
+- **Status:** ✅ CREATED
+- **Note:** Replaced deprecated `rhcdb.onmicrosoft.com` (CIAM type)
 
 ### Target QA Environment
 
@@ -197,20 +201,20 @@
 
 #### **QA Databases**
 
-**SQL Server:** `rhc-qa-sqlsvr.database.windows.net` (to be created)
-- **Location:** East US 2
-- **Tenant:** `rhcdbcore.onmicrosoft.com`
-- **Resource Group:** `rhc-db-qa-rg`
+**SQL Server:** `rhcdb-qa-sqlsvr.database.windows.net` (to be created)
+- **Location:** East US (or East US 2 if capacity available)
+- **Tenant:** `rhcdbase.onmicrosoft.com`
+- **Resource Group:** `db-qa-rg`
 - **Tier:** Azure SQL Database (Standard S0: 10 DTUs)
 - **Authentication:** Managed Identity or Service Principal (SECURE)
 
 **Databases:**
-1. `corp_db` (Corporate/Shared)
-2. `hp2_db` (HP2 Primary)
+1. `qa_corp_db` (Corporate/Shared)
+2. `qa_hp2_db` (HP2 Primary)
 
 #### **Database Usage Pattern (QA)**
-- SMX QA → `corp_db`
-- HP2 QA → `corp_db` (read) + `hp2_db` (read/write)
+- SMX QA → `qa_corp_db`
+- HP2 QA → `qa_corp_db` (read) + `qa_hp2_db` (read/write)
 
 ---
 
@@ -301,11 +305,11 @@
 
 All subscriptions will be linked to **central billing account** under existing Office 365 tenant (`recalibratehealthcare.com`)
 
-| Tenant | Subscription Name | Purpose |
-|--------|-------------------|---------|
-| `rhc-b2c-qa.onmicrosoft.com` | `rhc-b2c-qa-sub` | QA environment resources |
-| `rhc-b2c-prod.onmicrosoft.com` | `rhc-b2c-prod-sub` | Production environment resources |
-| `rhcdbcore.onmicrosoft.com` | `rhc-db-core-sub` | Database resources (QA & Prod) |
+| Tenant | Subscription Name | Subscription ID | Purpose |
+|--------|-------------------|-----------------|---------|------
+| `rhcqa.onmicrosoft.com` | `subs-rhcqa` | `6991b88f-785e-4e03-bac3-e6721b76140b` | QA environment resources |
+| `rhcprod.onmicrosoft.com` | `subs-rhcprod` | `a1b7a5b1-6a3b-4bb4-a322-785bf70ed37a` | Production environment resources |
+| `rhcdbase.onmicrosoft.com` | `subs-rhcdbase` | `a73a2d39-598b-4671-a3a6-2028c59f3d40` | Database resources (QA & Prod) |
 
 **Benefits:**
 - Cost isolation and tracking per environment

@@ -12,7 +12,9 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 
 1. **QA Tenant (External ID)** - `rhcqa.onmicrosoft.com`
 2. **Production Tenant (External ID)** - `rhcprod.onmicrosoft.com`
-3. **Database Tenant (Workforce)** - `rhcdbcore.onmicrosoft.com`
+3. **Database Tenant (Workforce)** - `rhcdbase.onmicrosoft.com`
+
+> **⚠️ DEPRECATED:** The original database tenant `rhcdb.onmicrosoft.com` was created as CIAM type (incompatible with SQL Server) and has been replaced by `rhcdbase.onmicrosoft.com` (proper workforce tenant).
 
 > **Important Update:** As of May 1, 2025, Azure AD B2C is no longer available for new customers. We're using **Microsoft Entra External ID** instead, which is the modern replacement with the same core functionality plus enhanced features.
 
@@ -30,7 +32,8 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 ### Tenant Creation
 - [X] Create QA Tenant (`rhcqa.onmicrosoft.com`) - Entra External ID
 - [X] Create Production Tenant (`rhcprod.onmicrosoft.com`) - Entra External ID
-- [X] Create Database Tenant (`rhcdb.onmicrosoft.com`) - Workforce
+- [X] ~~Create Database Tenant (`rhcdb.onmicrosoft.com`) - Workforce~~ **DEPRECATED - CIAM type**
+- [X] Create Database Tenant (`rhcdbase.onmicrosoft.com`) - Workforce (AAD)
 
 ### Post-Creation Verification
 - [ ] Document all Tenant IDs (fill in table below)
@@ -46,7 +49,8 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
 |----------------|-------------|-----------|---------------|--------|
 | QA (External ID) | `rhcqa.onmicrosoft.com` | `2604fd9a-93a6-448e-bdc9-25e3c2d671a2` | `____/____/____` | ✅ |
 | Production (External ID) | `rhcprod.onmicrosoft.com` | `62b88a20-73fe-4b74-bed6-a2658d665565` | `2025-11-02` | ✅ |
-| Database (Workforce) | `rhcdb.onmicrosoft.com` | `b62a8921-d524-41af-9807-1057f031ecda` | `2025-11-02` | ✅ |
+| ~~Database (CIAM)~~ | ~~`rhcdb.onmicrosoft.com`~~ | ~~`b62a8921-d524-41af-9807-1057f031ecda`~~ | ~~`2025-11-02`~~ | ❌ **DEPRECATED** |
+| Database (Workforce) | `rhcdbase.onmicrosoft.com` | `4ed17c8b-26b0-4be9-a189-768c67fd03f5` | `2025-11-05` | ✅ |
 
 ---
 
@@ -169,10 +173,10 @@ This phase creates the three new Microsoft Entra tenants required for the multi-
    - **Do NOT select External ID for this one**
 
 4. **Fill in Tenant Details**
-   - **Organization name:** `RHC Database Core`
-   - **Initial domain name:** `rhcdbcore` ⚠️ **Must be alphanumeric only (no hyphens)**
+   - **Organization name:** `RHC DBase`
+   - **Initial domain name:** `rhcdbase` ⚠️ **Must be alphanumeric only (no hyphens)**
    - **Country/Region:** `United States`
-   - **Note:** The domain will become `rhcdbcore.onmicrosoft.com`
+   - **Note:** The domain will become `rhcdbase.onmicrosoft.com`
 
 5. **Review + Create**
    - Review all details
@@ -238,7 +242,8 @@ After creating all three tenants, verify:
    - `recalibratehealthcare.com` ✅
    - `rhcqa.onmicrosoft.com` ✅
    - `rhcprod.onmicrosoft.com` ✅
-   - `rhcdbcore.onmicrosoft.com` ✅
+   - `rhcdbase.onmicrosoft.com` ✅
+   - ~~`rhcdb.onmicrosoft.com`~~ (deprecated)
    - (Plus your dev tenants)
 
 ### 2. Tenant IDs Recorded
