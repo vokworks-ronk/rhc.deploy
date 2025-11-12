@@ -1,8 +1,8 @@
 # 🗄️ Phase 3: Database Tenant Setup
 
-**Status:** 🚀 Ready to Execute  
+**Status:** ✅ COMPLETE (Nov 11, 2025)  
 **Prerequisites:** Database tenant and subscription created ✅  
-**Estimated Time:** 60-90 minutes (3 environments)
+**Actual Time:** 5 days (due to Azure capacity issues, resolved with workaround)
 
 ---
 
@@ -45,51 +45,57 @@ This phase sets up the isolated Database tenant with **three separate environmen
 - [X] Document tenant ID and subscription ID
 
 ### Resource Group Creation
-- [ ] Create LAM resource group (`db-lam-rg`)
-- [ ] Create QA resource group (`db-qa-rg`)
-- [ ] Create Production resource group (`db-prod-rg`)
+- [X] Create LAM resource group (`db-lam-rg`)
+- [X] Create QA resource group (`db-qa-rg`)
+- [X] Create Production resource group (`db-prod-rg`)
 
 ### LAM Environment Setup
-- [ ] Create SQL Server (`rhcdb-lam-sqlsvr`)
-- [ ] Configure Entra ID admin (Ron)
-- [ ] Disable SQL authentication
-- [ ] Configure firewall rules
-- [ ] Create `lam_db` database
+- [X] Create SQL Server (`rhcdb-lam-sqlsvr`)
+- [X] Configure Entra ID admin (db-lam-sqlsvr-admin group)
+- [X] Disable SQL authentication (Entra-only enabled)
+- [X] Configure firewall rules (Nashua office IP)
+- [X] Create `lam_db` database
 
 ### QA Environment Setup
-- [ ] Create SQL Server (`rhcdb-qa-sqlsvr`)
-- [ ] Configure Entra ID admin (Ron)
-- [ ] Disable SQL authentication
-- [ ] Configure firewall rules
-- [ ] Create `qa_corp_db` database
-- [ ] Create `qa_hp2_db` database
+- [X] Create SQL Server (`rhcdb-qa-sqlsvr`)
+- [X] Configure Entra ID admin (db-qa-sqlsvr-admin group)
+- [X] Disable SQL authentication (Entra-only enabled)
+- [X] Configure firewall rules (Nashua office IP)
+- [X] Create `qa_corp_db` database
+- [X] Create `qa_hp2_db` database
 
 ### Production Environment Setup
-- [ ] Create SQL Server (`rhcdb-prod-sqlsvr`)
-- [ ] Configure Entra ID admin (Ron)
-- [ ] Disable SQL authentication
-- [ ] Configure firewall rules
-- [ ] Create `prod_corp_db` database
-- [ ] Create `prod_hp2_db` database
+- [X] Create SQL Server (`rhcdb-prod-sqlsvr`)
+- [X] Configure Entra ID admin (db-prod-sqlsvr-admin group)
+- [X] Disable SQL authentication (Entra-only enabled)
+- [X] Configure firewall rules (Nashua office IP)
+- [X] Create `prod_corp_db` database
+- [X] Create `prod_hp2_db` database
 
 ### Security Configuration (All Environments)
-- [ ] Enable Advanced Data Security
-- [ ] Configure audit logging
-- [ ] Set up Log Analytics workspace
-- [ ] Enable Microsoft Defender for SQL
+- [X] Enable Advanced Data Security
+- [X] Configure audit logging (Log Analytics workspace)
+- [X] Set up Log Analytics workspace (rhcdb-audit-logs)
+- [X] Enable Microsoft Defender for SQL (30-day free trial)
 
 ### Service Principal Setup
-- [ ] Create service principals for LAM apps
-- [ ] Create service principals for QA apps
-- [ ] Create service principals for Production apps
-- [ ] Grant database access to service principals
-- [ ] Document client IDs and secrets (Key Vault)
+- [X] Create service principals for LAM apps
+- [X] Create service principals for QA apps
+- [X] Create service principals for Production apps
+- [X] Grant database access to service principals
+- [X] Create database users for app-users groups (all 5 databases)
+- [ ] Document client IDs and secrets in Key Vault (Phase 5)
+
+### DBA User Setup
+- [X] Create DBA user accounts (icelerasys, mmcguirk, dtuck, bscott)
+- [X] Add DBA users to admin security groups
+- [X] Add Ron's B2B account to admin security groups
 
 ### Verification
-- [ ] Test connection to all SQL Servers
-- [ ] Verify Entra authentication works
-- [ ] Verify SQL authentication blocked
-- [ ] Update deployment-log.md
+- [X] Test connection to LAM SQL Server (icelerasys via SSMS)
+- [X] Verify Entra authentication works
+- [X] Verify SQL authentication blocked (Error 18456 confirmed)
+- [X] Update deployment-log.md
 
 ---
 
@@ -99,35 +105,38 @@ This phase sets up the isolated Database tenant with **three separate environmen
 
 | Name | Location | Purpose | Status |
 |------|----------|---------|--------|
-| `db-lam-rg` | East US 2 | LAM (Large Audience Model) databases | ⬜ |
-| `db-qa-rg` | East US 2 | QA/Testing databases | ⬜ |
-| `db-prod-rg` | East US 2 | Production databases | ⬜ |
+| `db-lam-rg` | East US 2 | LAM (Large Audience Model) databases | ✅ |
+| `db-qa-rg` | East US 2 | QA/Testing databases | ✅ |
+| `db-prod-rg` | East US 2 | Production databases | ✅ |
 
 ### Security Groups (Entra ID)
 
 | Group Name | Purpose | Members | Status |
 |------------|---------|---------|--------|
-| `db-lam-sqlsvr-admin` | LAM SQL Server administrators | Ron, Mike, Dave, Bruce | ⬜ |
-| `db-qa-sqlsvr-admin` | QA SQL Server administrators | Ron, Mike, Dave, Bruce | ⬜ |
-| `db-prod-sqlsvr-admin` | Production SQL Server administrators | Ron, Mike, Dave, Bruce | ⬜ |
+| `db-lam-sqlsvr-admin` | LAM SQL Server administrators | 5 DBA users (Ron B2B, icelerasys, mmcguirk, dtuck, bscott) | ✅ |
+| `db-lam-sqlsvr-app-users` | LAM application service principals | app-lam-db-access | ✅ |
+| `db-qa-sqlsvr-admin` | QA SQL Server administrators | 5 DBA users (Ron B2B, icelerasys, mmcguirk, dtuck, bscott) | ✅ |
+| `db-qa-sqlsvr-app-users` | QA application service principals | app-qa-db-access | ✅ |
+| `db-prod-sqlsvr-admin` | Production SQL Server administrators | 5 DBA users (Ron B2B, icelerasys, mmcguirk, dtuck, bscott) | ✅ |
+| `db-prod-sqlsvr-app-users` | Production application service principals | app-prod-db-access | ✅ |
 
 ### SQL Servers
 
 | Name | FQDN | Admin Group | Status |
 |------|------|-------------|--------|
-| `rhcdb-lam-sqlsvr` | `rhcdb-lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | ⬜ |
-| `rhcdb-qa-sqlsvr` | `rhcdb-qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | ⬜ |
-| `rhcdb-prod-sqlsvr` | `rhcdb-prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | ⬜ |
+| `rhcdb-lam-sqlsvr` | `rhcdb-lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | ✅ Online |
+| `rhcdb-qa-sqlsvr` | `rhcdb-qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | ✅ Online |
+| `rhcdb-prod-sqlsvr` | `rhcdb-prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | ✅ Online |
 
 ### Databases
 
-| Environment | Server | Database Name | Tier | Size | Purpose | Status |
-|-------------|--------|---------------|------|------|---------|--------|
-| LAM | `rhcdb-lam-sqlsvr` | `lam_db` | Standard S0 | 10 DTU | Dev/Load Testing | ⬜ |
-| QA | `rhcdb-qa-sqlsvr` | `qa_corp_db` | Standard S0 | 10 DTU | QA Corporate data | ⬜ |
-| QA | `rhcdb-qa-sqlsvr` | `qa_hp2_db` | Standard S0 | 10 DTU | QA HP2 app data | ⬜ |
-| Production | `rhcdb-prod-sqlsvr` | `prod_corp_db` | Standard S0 | 10 DTU | Prod Corporate data | ⬜ |
-| Production | `rhcdb-prod-sqlsvr` | `prod_hp2_db` | Standard S0 | 10 DTU | Prod HP2 app data | ⬜ |
+| Environment | Server | Database Name | Tier | Size | Purpose | DB Users Created | Status |
+|-------------|--------|---------------|------|------|---------|------------------|--------|
+| LAM | `rhcdb-lam-sqlsvr` | `lam_db` | Standard S0 | 10 DTU | Dev/Load Testing | db-lam-sqlsvr-app-users (R/W/X) | ✅ Online |
+| QA | `rhcdb-qa-sqlsvr` | `qa_corp_db` | Standard S0 | 10 DTU | QA Corporate data | db-qa-sqlsvr-app-users (R/W/X) | ✅ Online |
+| QA | `rhcdb-qa-sqlsvr` | `qa_hp2_db` | Standard S0 | 10 DTU | QA HP2 app data | db-qa-sqlsvr-app-users (R/W/X) | ✅ Online |
+| Production | `rhcdb-prod-sqlsvr` | `prod_corp_db` | Standard S0 | 10 DTU | Prod Corporate data | db-prod-sqlsvr-app-users (R/W/X) | ✅ Online |
+| Production | `rhcdb-prod-sqlsvr` | `prod_hp2_db` | Standard S0 | 10 DTU | Prod HP2 app data | db-prod-sqlsvr-app-users (R/W/X) | ✅ Online |
 
 ---
 
@@ -137,9 +146,10 @@ Before creating SQL Servers, we'll create security groups to manage administrato
 
 **Admin Members:**
 - Ron Krueger: `ron@recalibratehealthcare.com`
-- Mike McGuirk: `mmcguirk@celerasys.com`
-- Dave Tuck: `dtuck@celerasys.com`
-- Bruce Scott: `bruce.scott@resolutionx.ai`
+- Mike McGuirk: `mmcguirk@rhcdbase.onmicrosoft.com`
+- Dave Tuck: `dtuck@rhcdbase.onmicrosoft.com`
+- Bruce Scott: `bscott@rhcdbase.onmicrosoft.com`
+- ICelerasys: `icelerasys@rhcdbase.onmicrosoft.com`
 
 ---
 

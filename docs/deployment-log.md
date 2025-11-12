@@ -16,9 +16,9 @@ This document tracks all deployment activities, decisions, and issues encountere
 
 | Phase | Status | Completion Date | Notes |
 |-------|--------|-----------------|-------|
-| Phase 1: Tenant Creation | ⬜ Not Started | | Create 3 new tenants |
-| Phase 2: Subscription Setup | ⬜ Not Started | | Create subscriptions |
-| Phase 3: Database Tenant Setup | ⬜ Not Started | | SQL servers and databases |
+| Phase 1: Tenant Creation | ✅ Complete | Nov 5, 2025 | Created rhcqa, rhcprod, rhcdbase tenants |
+| Phase 2: Subscription Setup | ✅ Complete | Nov 5, 2025 | Created subscriptions for all tenants |
+| Phase 3: Database Tenant Setup | ✅ Complete | Nov 11, 2025 | All infrastructure, DBA users, service principals complete |
 | Phase 4: B2C Tenant Setup | ⬜ Not Started | | User flows and MFA |
 | Phase 5: Resource Groups & Services | ⬜ Not Started | | Container Apps, Key Vault, etc. |
 | Phase 6: GitHub Actions CI/CD | ⬜ Not Started | | Automated deployments |
@@ -114,43 +114,108 @@ _Document lessons learned..._
 
 ### Phase 3: Database Tenant Setup
 
-**Date Started:** _______________  
-**Date Completed:** _______________  
-**Status:** ⬜
+**Date Started:** November 6, 2025  
+**Date Completed:** November 11, 2025  
+**Status:** ✅ Complete
 
 #### Infrastructure Created
 
-- [ ] **Resource Groups**
-  - `rhc-db-qa-rg` created in East US 2
-  - `rhc-db-prod-rg` created (placeholder)
+- [X] **Resource Groups**
+  - `db-lam-rg` created in East US 2
+  - `db-qa-rg` created in East US 2
+  - `db-prod-rg` created in East US 2
 
-- [ ] **QA SQL Server**
-  - Name: `rhc-qa-sqlsvr.database.windows.net`
+- [X] **LAM SQL Server**
+  - Name: `rhcdb-lam-sqlsvr.database.windows.net`
   - Entra-only authentication: ✅
   - SQL authentication: ❌ Disabled
-  - Firewall rules configured
+  - Firewall rules configured (Nashua office IP)
+  - Managed Identity: Enabled
 
-- [ ] **QA Databases**
-  - `corp_db` created (Standard S0)
-  - `hp2_db` created (Standard S0)
+- [X] **QA SQL Server**
+  - Name: `rhcdb-qa-sqlsvr.database.windows.net`
+  - Entra-only authentication: ✅
+  - SQL authentication: ❌ Disabled
+  - Firewall rules configured (Nashua office IP)
+  - Managed Identity: Enabled
 
-- [ ] **Security Configuration**
-  - Audit logging enabled
-  - Microsoft Defender for SQL enabled
-  - Log Analytics workspace: `rhc-qa-db-logs`
+- [X] **Production SQL Server**
+  - Name: `rhcdb-prod-sqlsvr.database.windows.net`
+  - Entra-only authentication: ✅
+  - SQL authentication: ❌ Disabled
+  - Firewall rules configured (Nashua office IP)
+  - Managed Identity: Enabled
 
-#### Database Access
+- [X] **LAM Database**
+  - `lam_db` created (Standard S0, 10 DTU)
 
-- [ ] HP2 Managed Identity granted access
-- [ ] SMX Managed Identity granted access
+- [X] **QA Databases**
+  - `qa_corp_db` created (Standard S0, 10 DTU)
+  - `qa_hp2_db` created (Standard S0, 10 DTU)
+
+- [X] **Production Databases**
+  - `prod_corp_db` created (Standard S0, 10 DTU)
+  - `prod_hp2_db` created (Standard S0, 10 DTU)
+
+- [X] **Security Configuration**
+  - Audit logging enabled on all 3 servers
+  - Microsoft Defender for SQL enabled (30-day free trial)
+  - Log Analytics workspace: `rhcdb-audit-logs` (eastus2)
+
+#### DBA Access Configuration
+
+- [X] **DBA Users Created**
+  - icelerasys@rhcdbase.onmicrosoft.com
+  - mmcguirk@rhcdbase.onmicrosoft.com
+  - dtuck@rhcdbase.onmicrosoft.com
+  - bscott@rhcdbase.onmicrosoft.com
+  - Ron's B2B account added (ron@recalibratehealthcare.com)
+
+- [X] **Admin Security Groups**
+  - db-lam-sqlsvr-admin (5 members)
+  - db-qa-sqlsvr-admin (5 members)
+  - db-prod-sqlsvr-admin (5 members)
+
+#### Application Access Configuration
+
+- [X] **Service Principals Created**
+  - app-lam-db-access (App ID: 85a62c04-b11c-41d5-9b8c-ef9083e98c41)
+  - app-qa-db-access (App ID: 694db84f-ab2d-4410-b94e-92dbc8a24205)
+  - app-prod-db-access (App ID: 2f5e8533-d09b-4ac1-9f50-db184b61258a)
+
+- [X] **App-Users Security Groups**
+  - db-lam-sqlsvr-app-users (1 service principal)
+  - db-qa-sqlsvr-app-users (1 service principal)
+  - db-prod-sqlsvr-app-users (1 service principal)
+
+- [X] **Database Users Created**
+  - All 5 databases have app-users groups with db_datareader, db_datawriter, EXECUTE permissions
 
 #### Issues Encountered
 
-_Document any issues here..._
+**MAJOR ISSUE: Azure Regional Capacity Constraints (Nov 6-11)**
+- Problem: "RegionDoesNotAllowProvisioning" errors when creating SQL servers
+- Regions affected: East US, East US 2, Central US, South Central US, West US 2
+- Azure Support: Unhelpful, misdiagnosed phantom servers as real resources
+- **WORKAROUND (User Solution):**
+  1. Deleted all 3 resource groups
+  2. Waited 1 hour for Azure backend propagation
+  3. Recreated resource groups in East US 2
+  4. All servers created successfully immediately after
+- Result: 5-day delay, but all infrastructure operational
+
+**EARLIER ISSUE: CIAM Tenant Type (Nov 5-6)**
+- Original rhcdb tenant was CIAM type (incompatible with SQL Server)
+- Rebuilt entirely as rhcdbase with workforce tenant type
+- Documented in rebuildDBserver.md
 
 #### Lessons Learned
 
-_Document lessons learned..._
+1. **Always verify tenant type immediately after creation** - CIAM vs Workforce is permanent
+2. **Azure capacity messages can be misleading** - Delete/recreate with wait period can clear stuck state
+3. **Don't rely solely on Azure support** - User workarounds sometimes more effective
+4. **Document phantom resource issues** - Failed operations create metadata that confuses support
+5. **Service principals work better than managed identity for cross-tenant** - Database tenant isolation maintained
 
 ---
 
@@ -478,20 +543,41 @@ _List any known issues that are not blockers..._
 
 Use this section for quick daily notes during deployment:
 
-### 2025-10-27
-- Started documentation preparation
-- GitHub Copilot generated comprehensive deployment docs
-- Ready to begin Phase 1
+### 2025-11-11
+**Phase 3 Database Tenant Complete!**
+- Created 4 DBA user accounts (icelerasys, mmcguirk, dtuck, bscott)
+- Added Ron's B2B guest account to admin groups (5 total admins)
+- Created 3 service principals for application database access
+- Configured database-level users with R/W/X permissions in all 5 databases
+- Tested SSMS connectivity with icelerasys account - SUCCESS!
+- Service principal credentials generated and saved securely
+- All Phase 3 infrastructure operational and ready for Phase 5 Container Apps
 
----
+### 2025-11-06 to 2025-11-11
+**Azure Capacity Crisis and Resolution**
+- Encountered widespread "RegionDoesNotAllowProvisioning" errors
+- Submitted Azure support ticket - received poor assistance
+- User implemented workaround: delete resource groups, wait 1 hour, recreate
+- Breakthrough: All 3 SQL servers created successfully in East US 2
+- Rapidly completed all databases, firewall rules, audit logging, Microsoft Defender
+- Updated all documentation to reflect completion
 
-### [Date]
-_Add your daily notes here as you work through the phases..._
+### 2025-11-05 to 2025-11-06
+**CIAM Tenant Issue Discovery and Rebuild**
+- Discovered original rhcdb tenant was CIAM type (incompatible with SQL Server)
+- Made decision to completely rebuild with new workforce tenant
+- Created rhcdbase.onmicrosoft.com tenant (AAD workforce type)
+- Created new subs-rhcdbase subscription
+- Cancelled old rhcdb tenant and subscription
+- Documented rebuild process in rebuildDBserver.md
 
----
-
-### [Date]
-_Continue adding notes..._
+### 2025-11-05
+**Phase 1 & 2 Complete**
+- Created rhcqa.onmicrosoft.com (External ID tenant)
+- Created rhcprod.onmicrosoft.com (External ID tenant)
+- Created rhcdb.onmicrosoft.com (later discovered to be CIAM - deprecated)
+- Created subscriptions for all tenants
+- Linked billing to central account
 
 ---
 
