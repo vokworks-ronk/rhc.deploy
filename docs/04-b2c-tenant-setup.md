@@ -1,8 +1,10 @@
 # 🔐 Phase 4: External ID Tenant Configuration
 
-**Status:** ⏳ Waiting for Phase 1  
-**Prerequisites:** QA and Production tenants created  
+**Status:** 🔄 In Progress  
+**Prerequisites:** ✅ QA tenant created (`rhcqa.onmicrosoft.com`)  
 **Estimated Time:** 60-90 minutes
+
+**Current Progress:** Application registrations complete, configuring authentication flows
 
 ---
 
@@ -30,9 +32,9 @@ This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Ent
 ## 🎯 Checklist
 
 ### Pre-Configuration
-- [ ] Verify B2C QA tenant created (`rhc-b2c-qa.onmicrosoft.com`)
-- [ ] Document tenant ID
-- [ ] Verify Global Admin access
+- [X] Verify QA tenant created (`rhcqa.onmicrosoft.com`)
+- [X] Document tenant ID (2604fd9a-93a6-448e-bdc9-25e3c2d671a2)
+- [X] Verify Global Admin access
 
 ### User Flow Configuration
 - [ ] Create sign-up/sign-in user flow
@@ -42,12 +44,12 @@ This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Ent
 - [ ] Configure user attributes to collect
 
 ### Application Registrations
-- [ ] Register HP2 QA application
-- [ ] Register SMX QA application
-- [ ] Configure redirect URIs
-- [ ] Configure API permissions
-- [ ] Create client secrets
-- [ ] Document App IDs and secrets
+- [X] Register HP2 QA application
+- [X] Register SMX QA application
+- [X] Configure redirect URIs
+- [X] Configure API permissions
+- [X] Create client secrets (2-year expiration)
+- [X] Document App IDs and secrets
 
 ### Custom Policies (Optional)
 - [ ] Configure invitation-only policy
@@ -70,9 +72,9 @@ This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Ent
 ## 📝 B2C Configuration Information (Fill in after setup)
 
 ### Tenant Details
-- **Tenant Domain:** `rhc-b2c-qa.onmicrosoft.com`
-- **Tenant ID:** `___________________`
-- **Tenant Type:** Azure AD B2C
+- **Tenant Domain:** `rhcqa.onmicrosoft.com`
+- **Tenant ID:** `2604fd9a-93a6-448e-bdc9-25e3c2d671a2`
+- **Tenant Type:** Microsoft Entra External ID (CIAM)
 
 ### User Flows Created
 | Flow Name | Type | MFA | Status |
@@ -82,8 +84,8 @@ This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Ent
 ### Application Registrations
 | Application | App ID | Client Secret (Key Vault) | Redirect URI | Status |
 |-------------|--------|---------------------------|--------------|--------|
-| HP2 QA | `_________` | `hp2-qa-client-secret` | `https://hp2-qa.recalibratex.net/signin-oidc` | ⬜ |
-| SMX QA | `_________` | `smx-qa-client-secret` | `https://smx-qa.recalibratex.net/signin-oidc` | ⬜ |
+| HP2 QA | `cfdc3d4b-dfe3-4414-a09d-a11a568187de` | `hp2-qa-client-secret` | `https://hp2-qa.recalibratex.net/signin-oidc` | ✅ |
+| SMX QA | `f5c66c2e-400c-4af7-b397-c1c841504371` | `smx-qa-client-secret` | `https://smx-qa.recalibratex.net/signin-oidc` | ✅ |
 
 ---
 
@@ -423,10 +425,10 @@ For production, use Azure Communication Services (already have `hp225dev-email-s
 ```json
 {
   "AzureAdB2C": {
-    "Instance": "https://rhc-b2c-qa.b2clogin.com",
-    "Domain": "rhc-b2c-qa.onmicrosoft.com",
-    "TenantId": "<b2c-qa-tenant-id>",
-    "ClientId": "<hp2-app-id>",
+    "Instance": "https://rhcqa.ciamlogin.com",
+    "Domain": "rhcqa.onmicrosoft.com",
+    "TenantId": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2",
+    "ClientId": "cfdc3d4b-dfe3-4414-a09d-a11a568187de",
     "ClientSecret": "<hp2-client-secret>",
     "SignUpSignInPolicyId": "B2C_1_signupsignin_qa",
     "CallbackPath": "/signin-oidc",
@@ -444,10 +446,10 @@ For production, use Azure Communication Services (already have `hp225dev-email-s
 ```json
 {
   "AzureAdB2C": {
-    "Instance": "https://rhc-b2c-qa.b2clogin.com",
-    "Domain": "rhc-b2c-qa.onmicrosoft.com",
-    "TenantId": "<b2c-qa-tenant-id>",
-    "ClientId": "<smx-app-id>",
+    "Instance": "https://rhcqa.ciamlogin.com",
+    "Domain": "rhcqa.onmicrosoft.com",
+    "TenantId": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2",
+    "ClientId": "f5c66c2e-400c-4af7-b397-c1c841504371",
     "ClientSecret": "<smx-client-secret>",
     "SignUpSignInPolicyId": "B2C_1_signupsignin_qa",
     "CallbackPath": "/signin-oidc",
