@@ -1,7 +1,9 @@
 # 🔐 Cross-Tenant Database Access Architecture
 
-**Status:** ✅ Infrastructure Complete | ⚠️ SQL Configuration Required  
-**Last Updated:** November 12, 2025
+**Status:** ✅ COMPLETE & VERIFIED  
+**Implementation Date:** November 13, 2025  
+**Approach Used:** Service Principal (Approach 1)  
+**Cross-Tenant Test:** ✅ Successful
 
 ---
 
@@ -148,35 +150,28 @@ Encrypt=True;
 
 ## 🎯 Recommended Implementation Path
 
-### Step 1: Use Service Principal for QA (Immediate)
+### Step 1: Store Service Principal Credentials ✅ COMPLETE
 
-Store the service principal credentials:
+Service principal credentials have been stored in both Key Vaults:
 
+**Stored Secrets:**
+- HP2 Key Vault (`rhc-hp2-qa-kv-2025`):
+  - `db-qa-app-id`: 694db84f-ab2d-4410-b94e-92dbc8a24205
+  - `db-qa-app-secret`: (secured - expires in 2 years)
+  
+- SMX Key Vault (`rhc-smx-qa-kv-2025`):
+  - `db-qa-app-id`: 694db84f-ab2d-4410-b94e-92dbc8a24205
+  - `db-qa-app-secret`: (secured - expires in 2 years)
+
+**Commands executed:**
 ```bash
-# Get the client secret (if not already stored)
-# This was generated in Phase 3
+# HP2 Key Vault
+az keyvault secret set --vault-name "rhc-hp2-qa-kv-2025" --name "db-qa-app-id" --value "694db84f-ab2d-4410-b94e-92dbc8a24205"
+az keyvault secret set --vault-name "rhc-hp2-qa-kv-2025" --name "db-qa-app-secret" --value "<secret>"
 
-# Store in HP2 Key Vault
-az keyvault secret set \
-  --vault-name "rhc-hp2-qa-kv-2025" \
-  --name "db-qa-app-id" \
-  --value "694db84f-ab2d-4410-b94e-92dbc8a24205"
-
-az keyvault secret set \
-  --vault-name "rhc-hp2-qa-kv-2025" \
-  --name "db-qa-app-secret" \
-  --value "<client-secret-from-phase-3>"
-
-# Store in SMX Key Vault
-az keyvault secret set \
-  --vault-name "rhc-smx-qa-kv-2025" \
-  --name "db-qa-app-id" \
-  --value "694db84f-ab2d-4410-b94e-92dbc8a24205"
-
-az keyvault secret set \
-  --vault-name "rhc-smx-qa-kv-2025" \
-  --name "db-qa-app-secret" \
-  --value "<client-secret-from-phase-3>"
+# SMX Key Vault
+az keyvault secret set --vault-name "rhc-smx-qa-kv-2025" --name "db-qa-app-id" --value "694db84f-ab2d-4410-b94e-92dbc8a24205"
+az keyvault secret set --vault-name "rhc-smx-qa-kv-2025" --name "db-qa-app-secret" --value "<secret>"
 ```
 
 ### Step 2: Configure Application Connection Strings
@@ -264,12 +259,14 @@ az containerapp secret set \
 
 ## ✅ Summary
 
-**Current State:**
+**Current Status:**
 - ✅ Database infrastructure ready (Phase 3)
 - ✅ Service principal created and configured (`app-qa-db-access`)
-- ✅ Database users created in both databases (`db-qa-app-users`)
-- ✅ Container Apps with managed identities created (Phase 5)
-- ⚠️ Database credentials not yet in Key Vault
+- ✅ Database users created in both databases (`db-qa-sqlsvr-app-users`)
+- ✅ Service principal credentials stored in Key Vaults (November 13, 2025)
+- ✅ Cross-tenant authentication tested and verified
+- ✅ Container Apps with managed identities created (Phase 5 - not used for database access)
+- ✅ 33 tables accessible in qa_corp_db
 
 **Recommended Next Steps:**
 1. Store service principal credentials in Key Vaults (both HP2 and SMX)
@@ -285,6 +282,195 @@ az containerapp secret set \
 
 ---
 
+## 🧪 Implementation Verification (November 13, 2025)
+
+### Test Scenario: Cross-Tenant Database Access
+
+**Test executed from QA Tenant context** (rhcqa.onmicrosoft.com):
+
+```powershell
+# Step 1: Get access token from Database tenant using service principal
+$databaseTenantId = "4ed17c8b-26b0-4be9-a189-768c67fd03f5"
+$appId = "694db84f-ab2d-4410-b94e-92dbc8a24205"
+$secret = "<from-keyvault>"
+
+$body = @{
+    client_id = $appId
+    client_secret = $secret
+    grant_type = "client_credentials"
+    scope = "https://database.windows.net/.default"
+}
+
+$response = Invoke-RestMethod -Method Post `
+    -Uri "https://login.microsoftonline.com/$databaseTenantId/oauth2/v2.0/token" `
+    -Body $body
+
+$token = $response.access_token
+
+# Step 2: Connect to database using token
+$conn = New-Object System.Data.SqlClient.SqlConnection
+$conn.ConnectionString = "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Encrypt=True;"
+$conn.AccessToken = $token
+$conn.Open()
+
+# Step 3: Execute query
+$cmd = $conn.CreateCommand()
+$cmd.CommandText = "SELECT DB_NAME(), SYSTEM_USER, COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'"
+$reader = $cmd.ExecuteReader()
+```
+
+**Test Results:**
+```
+✅ Successfully connected to database!
+
+Database: qa_corp_db
+Connected As: 694db84f-ab2d-4410-b94e-92dbc8a24205@4ed17c8b-26b0-4be9-a189-768c67fd03f5
+Tables: 33
+
+✅ Cross-tenant database access VERIFIED!
+```
+
+### Verification Checklist
+
+- [x] Service principal exists in Database tenant
+- [x] Service principal is member of `db-qa-sqlsvr-app-users` Entra group
+- [x] Database user `db-qa-sqlsvr-app-users` exists in `qa_corp_db`
+- [x] Database user `db-qa-sqlsvr-app-users` exists in `qa_hp2_db`
+- [x] Database user has `db_datareader` permissions
+- [x] Database user has `db_datawriter` permissions
+- [x] Service principal credentials stored in `rhc-hp2-qa-kv-2025`
+- [x] Service principal credentials stored in `rhc-smx-qa-kv-2025`
+- [x] Access token obtained from Database tenant OAuth endpoint
+- [x] SQL connection successful using access token
+- [x] Database query executed successfully
+- [x] Authenticated as service principal (verified by SYSTEM_USER)
+
+### Database Permissions Verified
+
+**qa_corp_db:**
+```sql
+SELECT dp.name as Username, r.name as RoleName 
+FROM sys.database_principals dp 
+LEFT JOIN sys.database_role_members drm ON dp.principal_id = drm.member_principal_id 
+LEFT JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id 
+WHERE dp.name = 'db-qa-sqlsvr-app-users'
+```
+
+**Results:**
+- Username: `db-qa-sqlsvr-app-users`
+- Type: `EXTERNAL_GROUP`
+- Roles: `db_datareader`, `db_datawriter`
+- ✅ Verified in both `qa_corp_db` and `qa_hp2_db`
+
+---
+
+## 📋 Implementation Deviations from Original Plan
+
+### Deviation 1: Database User Name
+**Planned:** `db-qa-app-users`  
+**Actual:** `db-qa-sqlsvr-app-users`  
+**Impact:** None - documentation references updated  
+**Reason:** Naming convention aligned with Entra group name
+
+### Deviation 2: Managed Identity Usage
+**Planned:** Potentially use managed identities from Phase 5  
+**Actual:** Service principal approach used exclusively  
+**Impact:** Positive - simpler, already configured, proven cross-tenant support  
+**Reason:** 
+- Service principal already configured in Phase 3
+- Managed identities require complex cross-tenant SQL configuration
+- Service principal provides native cross-tenant authentication
+- Managed identities kept for Key Vault access only (same-tenant)
+
+### Deviation 3: Client Secret Generation
+**Planned:** Use original secret from Phase 3  
+**Actual:** Generated new 2-year secret on November 13, 2025  
+**Impact:** None - old secret may still work but new one is documented  
+**Reason:** Original secret not documented/accessible  
+**New Secret Expiry:** November 2027
+
+### Implementation Success Factors
+
+✅ **What worked well:**
+- Service principal approach required minimal configuration
+- Cross-tenant authentication worked immediately
+- Database users and permissions were already configured
+- Token-based authentication is standard OAuth 2.0 flow
+- No SQL server configuration changes needed
+
+⚠️ **What to monitor:**
+- Client secret expiration (November 2027)
+- Service principal permissions if group membership changes
+- Database user permissions if group roles are modified
+
+---
+
+## 🔄 Application Implementation Guide
+
+### For .NET/C# Applications (HP2, SMX)
+
+```csharp
+using Azure.Identity;
+using Microsoft.Data.SqlClient;
+
+// Get credentials from Key Vault (using managed identity for KV access)
+var credential = new DefaultAzureCredential();
+var appId = await GetSecretFromKeyVault("db-qa-app-id");
+var secret = await GetSecretFromKeyVault("db-qa-app-secret");
+
+// Get access token from Database tenant
+var tokenCredential = new ClientSecretCredential(
+    "4ed17c8b-26b0-4be9-a189-768c67fd03f5", // Database tenant ID
+    appId,
+    secret
+);
+
+var token = await tokenCredential.GetTokenAsync(
+    new Azure.Core.TokenRequestContext(
+        new[] { "https://database.windows.net/.default" }
+    )
+);
+
+// Connect to database
+using var connection = new SqlConnection(
+    "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;" +
+    "Database=qa_corp_db;" +
+    "Encrypt=True;"
+);
+
+connection.AccessToken = token.Token;
+await connection.OpenAsync();
+
+// Execute queries
+using var command = connection.CreateCommand();
+command.CommandText = "SELECT * FROM YourTable";
+using var reader = await command.ExecuteReaderAsync();
+```
+
+### Key Points for Development Team
+
+1. **Token Management:**
+   - Access tokens expire (typically 1 hour)
+   - Implement token caching and refresh logic
+   - Use Azure SDK token credential classes for automatic refresh
+
+2. **Key Vault Access:**
+   - Use Container App managed identity to read secrets from Key Vault
+   - Store: `db-qa-app-id` and `db-qa-app-secret`
+   - Never hardcode credentials in application code
+
+3. **Connection Pooling:**
+   - Token refresh may require connection pool reset
+   - Consider using `AccessTokenCallback` in connection string for automatic refresh
+
+4. **Error Handling:**
+   - Handle token expiration gracefully
+   - Implement retry logic for transient network errors
+   - Log authentication failures for monitoring
+
+---
+
 **Related Documents:**
 - [03-database-tenant-setup.md](./03-database-tenant-setup.md) - Database infrastructure and service principals
+- [03-database-sql-login.md](./03-database-sql-login.md) - SQL authentication re-enablement
 - [05-resource-groups-and-services.md](./05-resource-groups-and-services.md) - Container Apps and managed identities
