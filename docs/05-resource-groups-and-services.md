@@ -1,8 +1,8 @@
 # 📦 Phase 5: Resource Groups and Services Setup
 
-**Status:** ⏳ Waiting for Phases 1-4  
+**Status:** ✅ Complete (QA Environment)  
 **Prerequisites:** B2C QA tenant and subscription ready  
-**Estimated Time:** 90-120 minutes
+**Completed:** November 12, 2025
 
 ---
 
@@ -39,36 +39,42 @@ This phase creates all Azure resources for HP2 and SMX applications in the QA en
 ## 🎯 Checklist
 
 ### Pre-Configuration
-- [ ] Verify B2C QA tenant and subscription ready
-- [ ] Document B2C App IDs and secrets from Phase 4
-- [ ] Have database connection details from Phase 3
+- [x] Verify B2C QA tenant and subscription ready
+- [x] Document B2C App IDs and secrets from Phase 4
+- [x] Have database connection details from Phase 3
 
 ### HP2 QA Resources
-- [ ] Create HP2 QA resource group (`rhc-hp2-qa-rg`)
-- [ ] Create Container Apps Environment
-- [ ] Create Container App with Managed Identity
-- [ ] Create Key Vault
-- [ ] Create Application Insights
-- [ ] Create Log Analytics Workspace
-- [ ] Create Communication Services
-- [ ] Configure custom domain
+- [x] Create HP2 QA resource group (`rhc-hp2-qa-rg`)
+- [x] Create Log Analytics Workspace
+- [x] Create Application Insights
+- [x] Create Container Apps Environment
+- [x] Create Key Vault
+- [x] Store B2C secrets in Key Vault
+- [x] Create Container App with Managed Identity
+- [x] Grant Managed Identity Key Vault access
+- [x] Create Communication Services
+- [ ] Configure custom domain (manual)
 
 ### SMX QA Resources
-- [ ] Create SMX QA resource group (`rhc-smx-qa-rg`)
-- [ ] Create Container Registry
-- [ ] Create Container Apps Environment
-- [ ] Create Container App with Managed Identity
-- [ ] Create Key Vault
-- [ ] Create Application Insights
-- [ ] Create Communication Services
-- [ ] Create Storage Account
-- [ ] Configure custom domain
+- [x] Create SMX QA resource group (`rhc-smx-qa-rg`)
+- [x] Create Log Analytics Workspace
+- [x] Create Application Insights
+- [x] Create Container Apps Environment
+- [x] Create Key Vault
+- [x] Store B2C secrets in Key Vault
+- [x] Create Container App with Managed Identity
+- [x] Grant Managed Identity Key Vault access
+- [x] Create Container Registry
+- [x] Create Communication Services
+- [x] Create Storage Account
+- [ ] Configure custom domain (manual)
 
 ### Cross-Tenant Configuration
-- [ ] Grant Managed Identity access to databases
-- [ ] Store B2C secrets in Key Vault
-- [ ] Configure app settings
-- [ ] Test connectivity
+- [x] Store B2C secrets in Key Vault
+- [x] Grant Managed Identity Key Vault access
+- [ ] Grant Managed Identity access to databases (requires SQL admin)
+- [ ] Configure app settings (after deployment)
+- [ ] Test connectivity (after deployment)
 
 ### Verification
 - [ ] Test Managed Identity database access
@@ -82,28 +88,97 @@ This phase creates all Azure resources for HP2 and SMX applications in the QA en
 
 ### HP2 QA Resources
 
-| Resource Type | Resource Name | Purpose | Status |
-|---------------|---------------|---------|--------|
-| Resource Group | `rhc-hp2-qa-rg` | HP2 QA resources | ⬜ |
-| Container Apps Environment | `rhc-hp2-qa-env` | Container hosting | ⬜ |
-| Container App | `rhc-hp2-qa-app` | HP2 application | ⬜ |
-| Key Vault | `rhc-hp2-qa-kv` | Secrets storage | ⬜ |
-| Application Insights | `rhc-hp2-qa-insights` | Monitoring | ⬜ |
-| Log Analytics | `rhc-hp2-qa-logs` | Logging | ⬜ |
-| Communication Services | `rhc-hp2-qa-comms` | Email services | ⬜ |
+| Resource Type | Resource Name | Purpose | Details | Status |
+|---------------|---------------|---------|---------|--------|
+| Resource Group | `rhc-hp2-qa-rg` | HP2 QA resources | East US 2 | ✅ |
+| Log Analytics | `rhc-hp2-qa-logs` | Logging | Customer ID: 47b4be4b-22dd-49a0-8ab1-b2ff23d746d2 | ✅ |
+| Application Insights | `rhc-hp2-qa-insights` | Monitoring | Instrumentation Key: 2d95180d-9339-4103-b084-c20da27aa655 | ✅ |
+| Container Apps Environment | `rhc-hp2-qa-env` | Container hosting | Domain: blackdesert-17ce6cff.eastus2.azurecontainerapps.io | ✅ |
+| Key Vault | `rhc-hp2-qa-kv-2025` | Secrets storage | URI: https://rhc-hp2-qa-kv-2025.vault.azure.net/ | ✅ |
+| Container App | `rhc-hp2-qa-app` | HP2 application | URL: https://rhc-hp2-qa-app.blackdesert-17ce6cff.eastus2.azurecontainerapps.io | ✅ |
+| Managed Identity | System-assigned | Database/KV access | Principal ID: 79266d50-2220-4237-bc2a-588f83c39d54 | ✅ |
+| Communication Services | `rhc-hp2-qa-comm` | Email services | Hostname: rhc-hp2-qa-comm.unitedstates.communication.azure.com | ✅ |
 
 ### SMX QA Resources
 
-| Resource Type | Resource Name | Purpose | Status |
-|---------------|---------------|---------|--------|
-| Resource Group | `rhc-smx-qa-rg` | SMX QA resources | ⬜ |
-| Container Registry | `rhcsmxqaacr` | Container images | ⬜ |
-| Container Apps Environment | `rhc-smx-qa-env` | Container hosting | ⬜ |
-| Container App | `rhc-smx-qa-app` | SMX application | ⬜ |
-| Key Vault | `rhc-smx-qa-kv` | Secrets storage | ⬜ |
-| Application Insights | `rhc-smx-qa-insights` | Monitoring | ⬜ |
-| Communication Services | `rhc-smx-qa-comms` | Email services | ⬜ |
-| Storage Account | `rhcsmxqastorage` | File storage | ⬜ |
+| Resource Type | Resource Name | Purpose | Details | Status |
+|---------------|---------------|---------|---------|--------|
+| Resource Group | `rhc-smx-qa-rg` | SMX QA resources | East US 2 | ✅ |
+| Log Analytics | `rhc-smx-qa-logs` | Logging | Customer ID: b9c3a858-cf18-477d-8177-b57239468b06 | ✅ |
+| Application Insights | `rhc-smx-qa-insights` | Monitoring | Instrumentation Key: 8649e36e-eade-469f-920e-ea658ca187a6 | ✅ |
+| Container Apps Environment | `rhc-smx-qa-env` | Container hosting | Domain: mangobay-bcba1c5a.eastus2.azurecontainerapps.io | ✅ |
+| Key Vault | `rhc-smx-qa-kv-2025` | Secrets storage | URI: https://rhc-smx-qa-kv-2025.vault.azure.net/ | ✅ |
+| Container App | `rhc-smx-qa-app` | SMX application | URL: https://rhc-smx-qa-app.mangobay-bcba1c5a.eastus2.azurecontainerapps.io | ✅ |
+| Managed Identity | System-assigned | Database/KV access | Principal ID: 803e1c43-2245-49be-8463-a33df9bace0d | ✅ |
+| Container Registry | `rhcsmxqaacr` | Container images | Login Server: rhcsmxqaacr.azurecr.io | ✅ |
+| Communication Services | `rhc-smx-qa-comm` | Email services | Hostname: rhc-smx-qa-comm.unitedstates.communication.azure.com | ✅ |
+| Storage Account | `rhcsmxqastorage` | File storage | Blob Endpoint: https://rhcsmxqastorage.blob.core.windows.net/ | ✅ |
+
+---
+
+## 🎉 QA Environment Created - November 12, 2025
+
+All QA infrastructure has been successfully provisioned! Both HP2 and SMX applications now have:
+- ✅ Resource groups with monitoring and logging
+- ✅ Container Apps environments with managed identities  
+- ✅ Key Vaults with B2C client secrets stored
+- ✅ Communication Services for email functionality
+- ✅ SMX-specific: Container Registry and Storage Account
+
+### Key Vault Secrets Stored
+
+**HP2 Key Vault (`rhc-hp2-qa-kv-2025`):**
+- `hp2-qa-client-secret` - B2C application client secret
+
+**SMX Key Vault (`rhc-smx-qa-kv-2025`):**
+- `smx-qa-client-secret` - B2C application client secret
+
+### Managed Identity Permissions
+
+Both Container Apps have system-assigned managed identities configured with:
+- ✅ Key Vault access (get, list secrets)
+- ⚠️ Database access (requires manual SQL configuration - see below)
+
+### 🔴 Manual Configuration Required
+
+#### 1. Cross-Tenant Database Access
+
+The managed identities need access to databases in the `rhcdbase` tenant. This requires SQL admin access to create external users:
+
+```sql
+-- Connect to rhcdb-qa-sqlsvr.database.windows.net as admin
+-- Run for qa_corp_db:
+USE qa_corp_db;
+CREATE USER [rhc-hp2-qa-app] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [rhc-hp2-qa-app];
+ALTER ROLE db_datawriter ADD MEMBER [rhc-hp2-qa-app];
+
+-- Run for qa_hp2_db:
+USE qa_hp2_db;
+CREATE USER [rhc-hp2-qa-app] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [rhc-hp2-qa-app];
+ALTER ROLE db_datawriter ADD MEMBER [rhc-hp2-qa-app];
+
+-- For SMX (when needed):
+CREATE USER [rhc-smx-qa-app] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [rhc-smx-qa-app];
+ALTER ROLE db_datawriter ADD MEMBER [rhc-smx-qa-app];
+```
+
+**Note:** Cross-tenant managed identity authentication requires the managed identity to be invited as a guest to the database tenant first, or use SQL connection strings with Key Vault references.
+
+#### 2. Communication Services Email Configuration
+
+Configure email domains in Azure Portal:
+1. Navigate to Communication Services resource
+2. Add and verify custom domain (e.g., noreply@recalibratex.net)
+3. Configure SPF/DKIM records
+
+#### 3. Custom Domain Setup
+
+Configure custom domains for Container Apps:
+- HP2 QA: `hp2-qa.recalibratex.net` → `rhc-hp2-qa-app.blackdesert-17ce6cff.eastus2.azurecontainerapps.io`
+- SMX QA: `smx-qa.recalibratex.net` → `rhc-smx-qa-app.mangobay-bcba1c5a.eastus2.azurecontainerapps.io`
 
 ---
 
