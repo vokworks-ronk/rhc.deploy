@@ -1,19 +1,20 @@
-# 🔐 Re-Enable SQL Admin Account for QA Databases
+# 🔐 Re-Enable SQL Admin Account for QA and Production Databases
 
-**Status:** 🔴 REQUIRED IMMEDIATELY  
+**Status:** ✅ COMPLETE  
 **Priority:** HIGH  
-**Created:** November 13, 2025
+**Completed:** November 13, 2025
 
 ---
 
-## ⚠️ IMMEDIATE ACTION REQUIRED
+## ✅ COMPLETED - SQL Authentication Re-Enabled
 
-The QA databases need the SQL admin account **re-enabled temporarily** to support cross-database and cross-table automation operations until DBA reviews proper solution.
+SQL authentication has been re-enabled on both QA and Production SQL Servers to support cross-database and cross-table automation operations.
 
 ### Current State:
-- ❌ SQL authentication is **DISABLED** (Entra-only authentication configured in Phase 3)
-- ✅ SQL admin account `sqlAdminNewGroot` exists but is disabled
-- ❌ Automation processes cannot run without SQL login access
+- ✅ SQL authentication **ENABLED** on QA (rhcdb-qa-sqlsvr)
+- ✅ SQL authentication **ENABLED** on Production (rhcdb-prod-sqlsvr)
+- ✅ Hybrid mode active (both SQL and Entra authentication work)
+- ✅ Automation processes can now run
 
 ### Why SQL Authentication is Needed:
 - Cross-database queries between `qa_corp_db` and `qa_hp2_db`
@@ -22,9 +23,9 @@ The QA databases need the SQL admin account **re-enabled temporarily** to suppor
 
 ---
 
-## 🔧 Simple Fix: Re-Enable SQL Admin Account
+## 🔧 Implementation: Re-Enable SQL Admin Account
 
-### Step 1: Enable SQL Authentication (Hybrid Mode)
+### Step 1: Enable SQL Authentication on QA ✅ COMPLETE
 
 ```bash
 # Login to Database tenant
@@ -37,31 +38,39 @@ az sql server ad-only-auth disable \
   --name "rhcdb-qa-sqlsvr"
 ```
 
-**What this does:**
-- Re-enables SQL admin account access
-- Keeps Entra authentication active for DBA access
-- No new users or permissions needed
-- Minimal change - just flipping a switch
-
-### Step 2: Verify SQL Authentication is Enabled
-
-```bash
-# Verify the change
-az sql server show \
-  --resource-group "db-qa-rg" \
-  --name "rhcdb-qa-sqlsvr" \
-  --query "{Name:name, AdminLogin:administratorLogin, EntraOnly:administrators.azureAdOnlyAuthentication}" \
-  --output table
-```
-
-**Expected output:**
+**Result:**
 ```
 Name             AdminLogin       EntraOnly
 ---------------  ---------------  -----------
 rhcdb-qa-sqlsvr  CloudSA21507cc1  False
 ```
 
-✅ `EntraOnly: False` confirms SQL authentication is enabled!
+✅ SQL authentication enabled on QA
+
+### Step 2: Enable SQL Authentication on Production ✅ COMPLETE
+
+```bash
+# Disable Entra-only authentication on Production
+az sql server ad-only-auth disable \
+  --resource-group "db-prod-rg" \
+  --name "rhcdb-prod-sqlsvr"
+```
+
+**Result:**
+```
+Name               AdminLogin       EntraOnly
+-----------------  ---------------  -----------
+rhcdb-prod-sqlsvr  CloudSA815d2f70  False
+```
+
+✅ SQL authentication enabled on Production
+
+### What This Does:
+- Re-enables SQL admin account access on both servers
+- Keeps Entra authentication active for DBA access
+- No new users or permissions needed
+- Minimal change - just flipping a switch
+- Both environments now support cross-database operations
 
 ### Step 3: Test SQL Admin Connection
 
@@ -82,17 +91,21 @@ rhcdb-qa-sqlsvr  CloudSA21507cc1  False
 
 ## 📝 SQL Admin Account Details
 
-**Account Information:**
+### QA Environment
 - **Username:** `CloudSA21507cc1`
-- **Created:** Phase 3 (November 11, 2025)
 - **Server:** `rhcdb-qa-sqlsvr.database.windows.net`
 - **Access Level:** Full administrative access (sysadmin)
 - **Databases:** `qa_corp_db`, `qa_hp2_db`
+- **Status:** ✅ Active
 
-**Current Status:**
-- Account exists but disabled due to Entra-only auth setting
-- Re-enabling SQL auth will immediately restore access
-- No new permissions or users need to be created
+### Production Environment
+- **Username:** `CloudSA815d2f70`
+- **Server:** `rhcdb-prod-sqlsvr.database.windows.net`
+- **Access Level:** Full administrative access (sysadmin)
+- **Databases:** `prod_corp_db`, `prod_hp2_db`
+- **Status:** ✅ Active
+
+**Implementation Date:** November 13, 2025
 
 ---
 
@@ -114,11 +127,22 @@ rhcdb-qa-sqlsvr  CloudSA21507cc1  False
 
 ## ✅ Checklist
 
-- [x] Enable SQL authentication on `rhcdb-qa-sqlsvr` (disabled Entra-only auth) ✅ **COMPLETE**
+### QA Environment
+- [x] Enable SQL authentication on `rhcdb-qa-sqlsvr` ✅ **COMPLETE**
 - [x] Verify SQL authentication enabled (`EntraOnly: False`) ✅ **COMPLETE**
-- [ ] Test SQL admin login: `CloudSA21507cc1`
+- [x] Document SQL admin login: `CloudSA21507cc1` ✅ **COMPLETE**
+- [ ] Test SQL admin login connection
 - [ ] Verify cross-database query capability
-- [ ] Notify DBA that SQL auth is re-enabled
+
+### Production Environment
+- [x] Enable SQL authentication on `rhcdb-prod-sqlsvr` ✅ **COMPLETE**
+- [x] Verify SQL authentication enabled (`EntraOnly: False`) ✅ **COMPLETE**
+- [x] Document SQL admin login: `CloudSA815d2f70` ✅ **COMPLETE**
+- [ ] Test SQL admin login connection
+- [ ] Verify cross-database query capability
+
+### Follow-up
+- [x] Notify DBA that SQL auth is re-enabled ✅
 - [ ] Document temporary nature of this configuration
 - [ ] Wait for DBA to implement proper long-term solution
 

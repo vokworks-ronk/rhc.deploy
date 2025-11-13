@@ -122,11 +122,11 @@ This phase sets up the isolated Database tenant with **three separate environmen
 
 ### SQL Servers
 
-| Name | FQDN | Admin Group | Status |
-|------|------|-------------|--------|
-| `rhcdb-lam-sqlsvr` | `rhcdb-lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | ✅ Online |
-| `rhcdb-qa-sqlsvr` | `rhcdb-qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | ✅ Online |
-| `rhcdb-prod-sqlsvr` | `rhcdb-prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | ✅ Online |
+| Name | FQDN | Admin Group | SQL Auth | Status |
+|------|------|-------------|----------|--------|
+| `rhcdb-lam-sqlsvr` | `rhcdb-lam-sqlsvr.database.windows.net` | `db-lam-sqlsvr-admin` | Entra-only | ✅ Online |
+| `rhcdb-qa-sqlsvr` | `rhcdb-qa-sqlsvr.database.windows.net` | `db-qa-sqlsvr-admin` | Hybrid (Nov 13) | ✅ Online |
+| `rhcdb-prod-sqlsvr` | `rhcdb-prod-sqlsvr.database.windows.net` | `db-prod-sqlsvr-admin` | Hybrid (Nov 13) | ✅ Online |
 
 ### Databases
 
