@@ -133,7 +133,7 @@ $spId = az ad sp list --display-name "github-actions-qa-deployer" --query "[0].i
 az role assignment create \
   --assignee $spId \
   --role "AcrPush" \
-  --scope "/subscriptions/3991b88f-785e-4e03-bac3-e6721b76140b/resourceGroups/rhc-smx-qa-rg/providers/Microsoft.ContainerRegistry/registries/rhcsmxqaacr2025"
+  --scope "/subscriptions/3991b88f-785e-4e03-bac3-e6721b76140b/resourceGroups/rhc-smx-qa-rg/providers/Microsoft.ContainerRegistry/registries/rhcsmxqaacr"
 ```
 
 ---
@@ -172,7 +172,7 @@ Add these secrets:
 | `SMX_QA_RG` | `rhc-smx-qa-rg` | Resource group name |
 | `SMX_QA_APP_NAME` | `rhc-smx-qa-app` | Container App name |
 | `SMX_QA_ENV_NAME` | `rhc-smx-qa-env` | Container App Environment |
-| `ACR_NAME` | `rhcsmxqaacr2025` | Container Registry name |
+| `ACR_NAME` | `rhcsmxqaacr` | Container Registry name |
 | `SMX_QA_KV_NAME` | `rhc-smx-qa-kv-2025` | Key Vault name |
 | `DB_SERVER` | `rhcdb-qa-sqlsvr.database.windows.net` | SQL Server endpoint |
 | `DB_NAME` | `qa_corp_db` | Database name |
