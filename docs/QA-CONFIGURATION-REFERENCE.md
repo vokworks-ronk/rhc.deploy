@@ -586,9 +586,85 @@ Should include: `Storage Blob Data Contributor`
 
 ---
 
+## 🔄 Common Operations
+
+### Container App Scaling
+
+**Default Configuration**: `minReplicas = 0` (scales to zero when idle to save costs)
+
+#### Check Current Scaling
+```bash
+# SMX QA
+az containerapp show \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg" \
+  --query "properties.template.scale" -o json
+
+# HP2 QA
+az containerapp show \
+  --name "rhc-hp2-qa-app" \
+  --resource-group "rhc-hp2-qa-rg" \
+  --query "properties.template.scale" -o json
+```
+
+#### Scale to Zero (Save Costs - Default)
+```bash
+# SMX QA
+az containerapp update \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg" \
+  --min-replicas 0 \
+  --max-replicas 10
+
+# HP2 QA
+az containerapp update \
+  --name "rhc-hp2-qa-app" \
+  --resource-group "rhc-hp2-qa-rg" \
+  --min-replicas 0 \
+  --max-replicas 10
+```
+
+#### Keep Warm (Active Testing)
+Set to 1 during testing to avoid cold starts (~$39/month per app):
+```bash
+# SMX QA
+az containerapp update \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg" \
+  --min-replicas 1 \
+  --max-replicas 10
+
+# HP2 QA
+az containerapp update \
+  --name "rhc-hp2-qa-app" \
+  --resource-group "rhc-hp2-qa-rg" \
+  --min-replicas 1 \
+  --max-replicas 10
+```
+
+**See `CONTAINER-APP-SCALING.md` for detailed cost analysis and scheduling strategies.**
+
+### Restart Container Apps
+
+```bash
+# SMX QA
+az containerapp revision restart \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg"
+
+# HP2 QA
+az containerapp revision restart \
+  --name "rhc-hp2-qa-app" \
+  --resource-group "rhc-hp2-qa-rg"
+```
+
+---
+
 ## 📚 Related Documentation
 
+- **Container App Scaling:** `docs/CONTAINER-APP-SCALING.md` - Scaling strategies and cost analysis
 - **CIAM Authentication Fix:** `docs/CIAM-AUTHENTICATION-FIX.md`
+- **Email Invitation Fix:** `docs/EMAIL-INVITATION-FIX.md`
 - **Monitoring Guide:** `docs/MONITORING-GUIDE.md`
 - **Phase 5 - Resources:** `docs/05-resource-groups-and-services.md`
 - **Phase 6 - GitHub Actions:** `docs/06-github-actions-qa.md`
@@ -596,6 +672,6 @@ Should include: `Storage Blob Data Contributor`
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 14, 2025  
+**Document Version:** 1.1  
+**Last Updated:** November 15, 2025  
 **Status:** ✅ Complete - Ready for use

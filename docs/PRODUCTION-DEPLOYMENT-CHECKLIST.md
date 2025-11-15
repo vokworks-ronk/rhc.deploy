@@ -149,6 +149,34 @@ az containerapp update \
 
 ---
 
+### Step 4: Configure Production Scaling (Always-On)
+
+**Important:** Set minReplicas = 1 for production to ensure no cold starts and instant response.
+
+**SMX Production:**
+```bash
+az containerapp update \
+  --name "<smx-prod-app-name>" \
+  --resource-group "<smx-prod-rg>" \
+  --min-replicas 1 \
+  --max-replicas 10
+```
+
+**HP2 Production:**
+```bash
+az containerapp update \
+  --name "<hp2-prod-app-name>" \
+  --resource-group "<hp2-prod-rg>" \
+  --min-replicas 1 \
+  --max-replicas 10
+```
+
+**Cost Impact:** ~$39/month per app for always-on baseline (total ~$78/month for both apps)
+
+**See `CONTAINER-APP-SCALING.md` for detailed cost analysis and scaling options.**
+
+---
+
 ## ✅ Verification Steps
 
 ### 1. Check Application Startup
@@ -268,13 +296,21 @@ az ad app update --id "<hp2-prod-client-id>" --web-redirect-uris "https://<defau
 
 **Reference:** See CsysUserMgmt README.md for configuration details.
 
-### 6. **Common Gotchas**
+### 6. **Container App Scaling**
+- ✅ **Production always-on:** Set minReplicas = 1 for production apps (no cold starts)
+- ✅ **Cost impact:** ~$39/month per app for always-on baseline (~$78/month total for SMX + HP2)
+- ✅ **QA can scale to zero:** Keep QA at minReplicas = 0 to save costs when not testing
+
+**See `CONTAINER-APP-SCALING.md` for detailed scaling strategies and cost analysis.**
+
+### 7. **Common Gotchas**
 - ❌ Don't use `DataProtection__BlobStorageUri` (wrong variable name)
 - ❌ Don't forget to create blob containers (app won't create them)
 - ❌ Don't mix dev/qa/prod tenant IDs in config
 - ❌ Don't deploy without testing system-diags page
 - ❌ Don't forget `CommunicationServices__FromAddress` environment variable
 - ❌ Don't forget `CsysUserMgmt__Invitation__BaseUrl` environment variable (invitation emails will have wrong URLs)
+- ❌ Don't forget to set minReplicas = 1 for production (avoid cold starts)
 
 ---
 
@@ -320,7 +356,8 @@ After successful deployment, update these documents:
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 1.1  
 **Created:** November 14, 2025  
+**Last Updated:** November 15, 2025  
 **Based on:** Successful QA deployment  
 **Status:** Ready for production deployment tomorrow
