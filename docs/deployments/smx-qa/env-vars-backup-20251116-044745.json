@@ -1,0 +1,126 @@
+[
+  {
+    "name": "ASPNETCORE_ENVIRONMENT",
+    "value": "Production"
+  },
+  {
+    "name": "AzureAd__Instance",
+    "value": "https://rhcqa.ciamlogin.com/"
+  },
+  {
+    "name": "AzureAd__Domain",
+    "value": "rhcqa.onmicrosoft.com"
+  },
+  {
+    "name": "AzureAd__TenantId",
+    "value": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2"
+  },
+  {
+    "name": "AzureAd__ClientId",
+    "value": "f5c66c2e-400c-4af7-b397-c1c841504371"
+  },
+  {
+    "name": "AzureAd__ClientSecret",
+    "value": "JdZ8Q~D10SiqYMwkdcdZF-IUQYBdriE3Jv54CalK"
+  },
+  {
+    "name": "AzureAd__CallbackPath",
+    "value": "/signin-oidc"
+  },
+  {
+    "name": "DatabaseServer",
+    "value": "rhcdb-qa-sqlsvr.database.windows.net"
+  },
+  {
+    "name": "DatabaseName",
+    "value": "qa_corp_db"
+  },
+  {
+    "name": "DatabaseTenantId",
+    "value": "4ed17c8b-26b0-4be9-a189-768c67fd03f5"
+  },
+  {
+    "name": "KeyVaultUri",
+    "value": "https://rhc-smx-qa-kv-2025.vault.azure.net/"
+  },
+  {
+    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+    "value": "InstrumentationKey=8649e36e-eade-469f-920e-ea658ca187a6;IngestionEndpoint=https://eastus2-3.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus2.livediagnostics.monitor.azure.com/"
+  },
+  {
+    "name": "StorageSettings__ConnectionString",
+    "value": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=rhcsmxqastorage;AccountKey=Mvqssj5GKrlkmqCEFHYlXwta4MO3asS58T6u7QUKSx5VXBiVXaBS2qEBwfY1TzuqUupRXo8rC4rR+AStUhqoRA==;BlobEndpoint=https://rhcsmxqastorage.blob.core.windows.net/;FileEndpoint=https://rhcsmxqastorage.file.core.windows.net/;QueueEndpoint=https://rhcsmxqastorage.queue.core.windows.net/;TableEndpoint=https://rhcsmxqastorage.table.core.windows.net/"
+  },
+  {
+    "name": "DataProtection__BlobUri",
+    "value": "https://rhcsmxqastorage.blob.core.windows.net/dataprotection-keys/keys.xml"
+  },
+  {
+    "name": "DataProtection__KeyVaultUri",
+    "value": "https://rhc-smx-qa-kv-2025.vault.azure.net/"
+  },
+  {
+    "name": "DataProtection__KeyId",
+    "value": "https://rhc-smx-qa-kv-2025.vault.azure.net/keys/dataprotection-keys"
+  },
+  {
+    "name": "ConnectionStrings__CorpDatabase",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "SMXCORE_CORP_DB_CONNECTION_STRING",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__DefaultConnection",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "EntraExternalId__Instance",
+    "value": "https://rhcqa.ciamlogin.com/"
+  },
+  {
+    "name": "EntraExternalId__Domain",
+    "value": "rhcqa.onmicrosoft.com"
+  },
+  {
+    "name": "EntraExternalId__TenantId",
+    "value": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2"
+  },
+  {
+    "name": "EntraExternalId__ClientId",
+    "value": "f5c66c2e-400c-4af7-b397-c1c841504371"
+  },
+  {
+    "name": "EntraExternalId__ClientSecret",
+    "value": "JdZ8Q~D10SiqYMwkdcdZF-IUQYBdriE3Jv54CalK"
+  },
+  {
+    "name": "CommunicationServices__ConnectionString",
+    "value": "endpoint=https://rhc-smx-qa-comms.unitedstates.communication.azure.com/;accesskey=AU3Hy1dOkACscJlWm0cUF6ihB0t22P2XB61Qph5Fp8u5u48oV7WUJQQJ99BKACULyCp2R8uOAAAAAZCS7t1H"
+  },
+  {
+    "name": "CommunicationServices__FromAddress",
+    "value": "DoNotReply@7e8b48f2-52d5-4a16-87c1-cd0726b14e05.azurecomm.net"
+  },
+  {
+    "name": "CsysUserMgmt__Invitation__BaseUrl",
+    "value": "https://smx-qa.recalibratex.net"
+  },
+  {
+    "name": "Branding__ApplicationName",
+    "value": "SMX QA"
+  },
+  {
+    "name": "Branding__Version",
+    "value": "0.1.0"
+  },
+  {
+    "name": "Application__Branding__ApplicationName",
+    "value": "SMX QA"
+  },
+  {
+    "name": "Application__Branding__Version",
+    "value": "0.1.0"
+  }
+]
