@@ -4,7 +4,17 @@
 
 ---
 
-## 🚨 CRITICAL PRINCIPLE - READ THIS FIRST
+## ⚠️ STOP AND READ THIS FIRST ⚠️
+
+### 🚨 [DANGER-ENVIRONMENT-VARIABLES.md](DANGER-ENVIRONMENT-VARIABLES.md) 🚨
+
+**Before touching ANY Azure Container App settings, read the danger file above.**
+
+Two Claude agents accidentally destroyed all environment variables using `--replace-env-vars` instead of `--set-env-vars`. Lost a full day of work. Don't let it happen again.
+
+---
+
+## 🚨 CRITICAL PRINCIPLE - BACKUP BEFORE CHANGES
 
 ### Before ANY Azure Container App Update:
 
