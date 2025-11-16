@@ -18,7 +18,16 @@ This phase configures the QA tenant (`rhcqa.onmicrosoft.com`) with Microsoft Ent
 - Application registrations for HP2 and SMX
 - API permissions and scopes
 
+> **⚠️ CRITICAL:** This is a **CIAM tenant** (Customer Identity and Access Management), formerly Azure AD B2C. It supports **LOCAL ACCOUNTS** with email/password authentication, not organizational accounts.
+
 > **Note:** We're using **Microsoft Entra External ID**, which replaces Azure AD B2C and provides enhanced features for external user management.
+
+**Tenant Type Verification:**
+```bash
+az rest --method GET --url "https://graph.microsoft.com/v1.0/organization" \
+  --query "value[0].tenantType" -o tsv
+# Should return: "CIAM"
+```
 
 **Authentication Requirements:**
 - ✅ Email/password authentication
@@ -422,17 +431,17 @@ For production, use Azure Communication Services (already have `hp225dev-email-s
 
 #### HP2 QA Configuration
 
+**⚠️ IMPORTANT:** Use `AzureAd` configuration section name (not `AzureAdB2C`) if your application code expects it. The Instance URL determines CIAM behavior.
+
 ```json
 {
-  "AzureAdB2C": {
-    "Instance": "https://rhcqa.ciamlogin.com",
+  "AzureAd": {
+    "Instance": "https://rhcqa.ciamlogin.com/",
     "Domain": "rhcqa.onmicrosoft.com",
     "TenantId": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2",
     "ClientId": "cfdc3d4b-dfe3-4414-a09d-a11a568187de",
     "ClientSecret": "<hp2-client-secret>",
-    "SignUpSignInPolicyId": "B2C_1_signupsignin_qa",
-    "CallbackPath": "/signin-oidc",
-    "SignedOutCallbackPath": "/signout-callback-oidc"
+    "CallbackPath": "/signin-oidc"
   },
   "ConnectionStrings": {
     "CorpDatabase": "Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=corp_db;Authentication=Active Directory Managed Identity;Encrypt=True;",
@@ -443,17 +452,17 @@ For production, use Azure Communication Services (already have `hp225dev-email-s
 
 #### SMX QA Configuration
 
+**⚠️ IMPORTANT:** Use `AzureAd` configuration section name (not `AzureAdB2C`) if your application code expects it. The Instance URL determines CIAM behavior.
+
 ```json
 {
-  "AzureAdB2C": {
-    "Instance": "https://rhcqa.ciamlogin.com",
+  "AzureAd": {
+    "Instance": "https://rhcqa.ciamlogin.com/",
     "Domain": "rhcqa.onmicrosoft.com",
-    "TenantId": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2",
+    "TenantId": "2604fd9a-93a6-848e-bdc9-25e3c2d671a2",
     "ClientId": "f5c66c2e-400c-4af7-b397-c1c841504371",
     "ClientSecret": "<smx-client-secret>",
-    "SignUpSignInPolicyId": "B2C_1_signupsignin_qa",
-    "CallbackPath": "/signin-oidc",
-    "SignedOutCallbackPath": "/signout-callback-oidc"
+    "CallbackPath": "/signin-oidc"
   },
   "ConnectionStrings": {
     "CorpDatabase": "Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=corp_db;Authentication=Active Directory Managed Identity;Encrypt=True;"

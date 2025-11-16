@@ -635,7 +635,15 @@ GO
 
 ### HP2 QA Environment Variables
 
+**Note:** This step should be done AFTER Phase 4 (B2C setup) and AFTER Phase 6 (when you know correct authentication settings).
+
 ```bash
+# Get Application Insights connection string
+$hp2AppInsightsConnection = az monitor app-insights component show \
+  --app "rhc-hp2-qa-insights" \
+  --resource-group "rhc-hp2-qa-rg" \
+  --query connectionString -o tsv
+
 # Update HP2 container app with environment variables
 az containerapp update \
   --name "rhc-hp2-qa-app" \
@@ -647,12 +655,21 @@ az containerapp update \
     "AzureAdB2C__SignUpSignInPolicyId=B2C_1_signupsignin_qa" \
     "KeyVaultName=rhc-hp2-qa-kv" \
     "ConnectionStrings__CorpDatabase=Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=corp_db;Authentication=Active Directory Managed Identity;Encrypt=True;" \
-    "ConnectionStrings__HP2Database=Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=hp2_db;Authentication=Active Directory Managed Identity;Encrypt=True;"
+    "ConnectionStrings__HP2Database=Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=hp2_db;Authentication=Active Directory Managed Identity;Encrypt=True;" \
+    "APPLICATIONINSIGHTS_CONNECTION_STRING=$hp2AppInsightsConnection"
 ```
 
 ### SMX QA Environment Variables
 
+**Note:** This step should be done AFTER Phase 4 (B2C setup) and AFTER Phase 6 (when you know correct authentication settings).
+
 ```bash
+# Get Application Insights connection string
+$smxAppInsightsConnection = az monitor app-insights component show \
+  --app "rhc-smx-qa-insights" \
+  --resource-group "rhc-smx-qa-rg" \
+  --query connectionString -o tsv
+
 # Update SMX container app
 az containerapp update \
   --name "rhc-smx-qa-app" \
@@ -663,8 +680,11 @@ az containerapp update \
     "AzureAdB2C__Domain=rhc-b2c-qa.onmicrosoft.com" \
     "AzureAdB2C__SignUpSignInPolicyId=B2C_1_signupsignin_qa" \
     "KeyVaultName=rhc-smx-qa-kv" \
-    "ConnectionStrings__CorpDatabase=Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=corp_db;Authentication=Active Directory Managed Identity;Encrypt=True;"
+    "ConnectionStrings__CorpDatabase=Server=tcp:rhc-qa-sqlsvr.database.windows.net,1433;Database=corp_db;Authentication=Active Directory Managed Identity;Encrypt=True;" \
+    "APPLICATIONINSIGHTS_CONNECTION_STRING=$smxAppInsightsConnection"
 ```
+
+**⚠️ IMPORTANT for CIAM Tenants:** The above uses B2C configuration. If your tenant is CIAM type (like QA), update authentication after Phase 6. See `docs/CIAM-AUTHENTICATION-FIX.md` for correct settings.
 
 ---
 

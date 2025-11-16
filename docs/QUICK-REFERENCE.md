@@ -1,7 +1,7 @@
-# 🔑 Quick Reference - Key Information
+## 🔑 Quick Reference - Key Information
 
 **Project:** Recalibrate Healthcare QA Deployment  
-**Last Updated:** October 27, 2025
+**Last Updated:** November 14, 2025
 
 ---
 
@@ -31,28 +31,30 @@
 
 ### New Tenants
 
-> **Note:** Using Microsoft Entra External ID instead of Azure AD B2C (Microsoft's modern replacement as of May 2025)
+> **⚠️ CRITICAL:** QA tenant is **CIAM** type (Customer Identity and Access Management), formerly Azure AD B2C. Supports **LOCAL ACCOUNTS** with email/password authentication.
+> 
+> **Authentication Endpoint:** Use `https://rhcqa.ciamlogin.com/` for CIAM tenants, NOT `login.microsoftonline.com`
 
-| Purpose | Domain | Tenant ID | Status |
-|---------|--------|-----------|--------|
-| QA (External ID) | `rhcqa.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| Prod (External ID) | `rhcprod.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-| Database (Workforce) | `rhcdbcore.onmicrosoft.com` | (fill after creation) | ⬜ Create in Phase 1 |
-
+| Purpose | Domain | Tenant ID | Tenant Type | Status |
+|---------|--------|-----------|-------------|--------|
+| QA (CIAM) | `rhcqa.onmicrosoft.com` | `2604fd9a-93a6-448e-bdc9-25e3c2d671a2` | **CIAM** | ✅ Created |
+| Database (Azure AD) | `rhcdbase.onmicrosoft.com` | `4ed17c8b-26b0-4be9-a189-768c67fd03f5` | Azure AD | ✅ Created |
 ### New Subscriptions
 
-| Name | Purpose | Status |
-|------|---------|--------|
-| `rhc-qa-sub` | QA environment resources | ⬜ Create in Phase 2 |
+| Name | Subscription ID | Purpose | Status |
+|------|----------------|---------|--------|
+| `subs-rhcqa` | `3991b88f-785e-4e03-bac3-e6721b76140b` | QA environment resources | ✅ Created |
+| `subs-rhcdbase` | `a73a2d39-598b-4671-a3a6-2028c59f3d40` | Database resources | ✅ Created |
+| `rhc-prod-sub` | (fill after creation) | Production resources (future) | ⬜ Future ||
 | `rhc-prod-sub` | Production resources (future) | ⬜ Create in Phase 2 |
 | `rhc-db-core-sub` | Database resources | ⬜ Create in Phase 2 |
 
 ### QA Databases
 
-| Server | Database | Purpose | Tier |
-|--------|----------|---------|------|
-| `rhc-qa-sqlsvr` | `corp_db` | Shared/corporate data | Standard S0 |
-| `rhc-qa-sqlsvr` | `hp2_db` | HP2 application data | Standard S0 |
+| Server | Database | Purpose | Tier | Status |
+|--------|----------|---------|------|--------|
+| `rhcdb-qa-sqlsvr.database.windows.net` | `qa_corp_db` | Shared/corporate data | Standard S0 | ✅ Created |
+| `rhcdb-qa-sqlsvr.database.windows.net` | `qa_hp2_db` | HP2 application data | Standard S0 | ✅ Created |
 
 ---
 
@@ -130,32 +132,32 @@
 
 ### Tenant IDs
 ```
-Back Office:    ed01df5d-6b39-45f8-82ae-36b88e5daae0
-Dev (smx25dev): cd21a3bf-622c-4725-8da7-2f8b9d265d14
-QA:             ___________________________________
-Prod:           ___________________________________
-Database:       ___________________________________
+Back Office:     ed01df5d-6b39-45f8-82ae-36b88e5daae0
+Dev (smx25dev):  cd21a3bf-622c-4725-8da7-2f8b9d265d14
+QA (CIAM):       2604fd9a-93a6-448e-bdc9-25e3c2d671a2  ✅
+Database:        4ed17c8b-26b0-4be9-a189-768c67fd03f5  ✅
+Prod:            ___________________________________
 ```
 
 ### Subscription IDs
 ```
-QA:             ___________________________________
-Production:     ___________________________________
-Database:       ___________________________________
+QA:              3991b88f-785e-4e03-bac3-e6721b76140b  ✅
+Database:        a73a2d39-598b-4671-a3a6-2028c59f3d40  ✅
+Production:      ___________________________________
 ```
 
-### Application IDs (External ID)
+### Application IDs (CIAM/External ID)
 ```
-HP2 QA:         ___________________________________
-SMX QA:         ___________________________________
-HP2 Prod:       ___________________________________
-SMX Prod:       ___________________________________
+HP2 QA:          cfdc3d4b-dfe3-4414-a09d-a11a568187de  ✅
+SMX QA:          f5c66c2e-400c-4af7-b397-c1c841504371  ✅
+HP2 Prod:        ___________________________________
+SMX Prod:        ___________________________________
 ```
 
 ### Managed Identity IDs
 ```
-HP2 QA:         ___________________________________
-SMX QA:         ___________________________________
+HP2 QA:          79266d50-2220-4237-bc2a-588f83c39d54  ✅
+SMX QA:          803e1c43-2245-49be-8463-a33df9bace0d  ✅
 ```
 
 ---
@@ -286,6 +288,11 @@ az containerapp logs show --name <app-name> --resource-group <rg-name> --tail 50
 3. **Secrets expire** - check expiration dates
 4. **Case sensitivity** - Azure resource names are case-insensitive, but URLs are case-sensitive
 5. **Managed Identity** - must be configured from both sides (app and database)
+6. **⚠️ CIAM Authentication** - CRITICAL for QA/Prod environments:
+   - Use `https://{tenant}.ciamlogin.com/` for CIAM tenants
+   - NOT `https://login.microsoftonline.com/`
+   - Local accounts use email/password (e.g., `user@example.com`)
+   - See `docs/CIAM-AUTHENTICATION-FIX.md` for complete details
 
 ---
 
@@ -304,9 +311,9 @@ az containerapp logs show --name <app-name> --resource-group <rg-name> --tail 50
 4. Review audit logs weekly
 
 ---
-
-**Keep this document handy for quick reference during deployment!**
-
+**Document Version:** 1.1  
+**Last Updated:** November 14, 2025  
+**Status:** ✅ QA Environment Complete - CIAM Authentication Configured
 ---
 
 **Document Version:** 1.0  

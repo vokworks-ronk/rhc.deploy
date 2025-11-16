@@ -86,6 +86,7 @@ This phase sets up automated deployment from GitHub to QA environment:
 - [ ] Test HP2 deployment from GitHub
 - [ ] Test SMX deployment from GitHub
 - [ ] Verify apps accessible at URLs
+- [ ] Verify Application Insights connected (see `docs/MONITORING-GUIDE.md`)
 - [ ] Update deployment-log.md
 
 ---
@@ -306,16 +307,24 @@ ENTRYPOINT ["dotnet", "SMX.dll"]
 
 The SMX app needs environment variables configured to access the database using the service principal credentials stored in Key Vault.
 
+**⚠️ CRITICAL - CIAM Authentication:** QA tenant is CIAM type. Use `https://rhcqa.ciamlogin.com/` endpoint, not `login.microsoftonline.com`.
+
 ```bash
 # Login to QA tenant
 az login --tenant rhcqa.onmicrosoft.com
 az account set --subscription "subs-rhcqa"
 
-# Update Container App with database configuration
+# Update Container App with database AND CIAM authentication configuration
 az containerapp update \
   --name "rhc-smx-qa-app" \
   --resource-group "rhc-smx-qa-rg" \
-  --set-env-vars \
+  --replace-env-vars \
+    "AzureAd__Instance=https://rhcqa.ciamlogin.com/" \
+    "AzureAd__Domain=rhcqa.onmicrosoft.com" \
+    "AzureAd__TenantId=2604fd9a-93a6-448e-bdc9-25e3c2d671a2" \
+    "AzureAd__ClientId=f5c66c2e-400c-4af7-b397-c1c841504371" \
+    "AzureAd__ClientSecret=JdZ8Q~D10SiqYMwkdcdZF-IUQYBdriE3Jv54CalK" \
+    "AzureAd__CallbackPath=/signin-oidc" \
     "DatabaseServer=rhcdb-qa-sqlsvr.database.windows.net" \
     "DatabaseName=qa_corp_db" \
     "KeyVaultUri=https://rhc-smx-qa-kv-2025.vault.azure.net/" \
@@ -710,6 +719,46 @@ az containerapp logs show \
   --resource-group "rhc-hp2-qa-rg" \
   --tail 50
 ```
+
+### 6. Verify Application Insights Integration
+
+**Important:** Application Insights should be configured during Phase 5 or Phase 6.
+
+```bash
+# Check if Application Insights is connected (SMX)
+az containerapp show \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg" \
+  --query "properties.template.containers[0].env[?name=='APPLICATIONINSIGHTS_CONNECTION_STRING']" \
+  -o table
+
+# Should show the connection string
+
+# Verify telemetry is flowing (wait a few minutes after deployment)
+az monitor app-insights query \
+  --app rhc-smx-qa-insights \
+  --resource-group rhc-smx-qa-rg \
+  --analytics-query "requests | where timestamp > ago(1h) | summarize count()" \
+  --output table
+```
+
+**If Application Insights is NOT connected:**
+
+```bash
+# Get connection string
+$smxAppInsightsConnection = az monitor app-insights component show \
+  --app "rhc-smx-qa-insights" \
+  --resource-group "rhc-smx-qa-rg" \
+  --query connectionString -o tsv
+
+# Add to Container App
+az containerapp update \
+  --name "rhc-smx-qa-app" \
+  --resource-group "rhc-smx-qa-rg" \
+  --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$smxAppInsightsConnection"
+```
+
+**For monitoring and health checks:** See `docs/MONITORING-GUIDE.md` for complete monitoring setup.
 
 ---
 
