@@ -1,13 +1,108 @@
-# 🚀 Quick Start Guide
+# RHC Deployment Documentation
 
-**Project:** Recalibrate Healthcare Multi-Tenant QA Deployment  
-**Last Updated:** October 27, 2025
+**Last Updated:** November 16, 2025
+
+---
+
+## 🚨 CRITICAL PRINCIPLE - READ THIS FIRST
+
+### Before ANY Azure Container App Update:
+
+**ALWAYS backup environment variables BEFORE making changes:**
+
+```powershell
+# Backup current state (do this EVERY time before changes)
+$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+az containerapp show `
+  --name {app-name} `
+  --resource-group {rg-name} `
+  --query "properties.template.containers[0].env" `
+  -o json > "deployments/{env}/env-vars-backup-$timestamp.json"
+
+# Commit the backup
+git add deployments/{env}/
+git commit -m "Backup env vars before changes - $timestamp"
+
+# THEN make your changes using --set-env-vars (adds to existing)
+# NEVER use --replace-env-vars unless you have a complete backup
+```
+
+**Why this matters:**
+- Azure Container Apps environment variables are NOT backed up by Azure
+- `--replace-env-vars` wipes out ALL existing variables
+- Lost configuration can take hours/days to reconstruct
+- Git commits provide version history and recovery points
+
+---
+
+## 📁 Folder Structure
+
+```
+docs/
+├── guides/              # Step-by-step setup guides (read once, reference later)
+│   ├── 00-project-overview.md
+│   ├── 01-tenant-creation.md
+│   ├── 02-subscription-setup.md
+│   ├── 03-database-*.md
+│   ├── 04-b2c-tenant-setup.md
+│   ├── 05-resource-groups-and-services.md
+│   ├── 06-github-actions-qa.md
+│   └── 07-security-and-compliance.md
+│
+├── reference/           # Troubleshooting and lookup docs
+│   ├── CIAM-AUTHENTICATION-FIX.md
+│   ├── CUSTOM-DOMAINS-SETUP.md
+│   ├── MONITORING-GUIDE.md
+│   ├── ENVIRONMENT_VARIABLES_INVENTORY.md
+│   └── ...
+│
+├── templates/           # Reusable templates for new deployments
+│   ├── PRODUCTION-DEPLOYMENT-CHECKLIST.md
+│   └── (more templates to be added)
+│
+└── deployments/         # COMPLETE state for each environment
+    ├── smx-dev/
+    ├── smx-qa/
+    ├── smx-prod/
+    ├── hp2-dev/
+    ├── hp2-qa/
+    └── hp2-prod/
+```
 
 ---
 
 ## 📚 Documentation Overview
 
-This project contains comprehensive documentation for deploying HP2 and SMX applications to a secure, multi-tenant QA environment.
+This project contains comprehensive documentation for deploying HP2 and SMX applications to secure multi-tenant environments (Dev, QA, Production).
+
+---
+
+## 🎯 Current Deployment Status
+
+### Development Environments
+- **SMX Dev** - `smx25dev-app` - ⚠️ Recently recovered from config wipe
+- **HP2 Dev** - `hp225dev-app` - Status unknown
+
+### QA Environments  
+- **SMX QA** - `rhc-smx-qa-app` - ✅ Working (as of Nov 14, 2025)
+- **HP2 QA** - `rhc-hp2-qa-app` - ⏳ Partially configured
+
+### Production Environments
+- **SMX Prod** - ⏳ Not yet deployed
+- **HP2 Prod** - ⏳ Not yet deployed
+
+---
+
+## ⚡ Quick Start
+
+### For New Deployments
+1. **Copy template**: Use `templates/PRODUCTION-DEPLOYMENT-CHECKLIST.md`
+2. **Create deployment folder**: `deployments/{app}-{env}/`
+3. **Backup BEFORE changes**: Use script above (in CRITICAL PRINCIPLE)
+4. **Document as you go**: Update deployment folder with actual values
+5. **Commit frequently**: Git is your safety net
+
+### For Initial Setup
 
 ### Document Index
 
