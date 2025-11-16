@@ -1,0 +1,94 @@
+[
+  {
+    "name": "EntraExternalId__Instance",
+    "value": "https://smx25dev.ciamlogin.com/"
+  },
+  {
+    "name": "EntraExternalId__Domain",
+    "value": "smx25dev.onmicrosoft.com"
+  },
+  {
+    "name": "EntraExternalId__TenantId",
+    "value": "cd21a3bf-622c-4725-8da7-2f8b9d265d14"
+  },
+  {
+    "name": "EntraExternalId__ClientId",
+    "value": "eb3ed853-3e13-44dd-8c1b-80456e7da0c1"
+  },
+  {
+    "name": "EntraExternalId__ClientSecret",
+    "value": "Bgu8Q~YQqVLs0yCCs8D4j0q4F4BY4kc4hH6ShbuK"
+  },
+  {
+    "name": "DatabaseSettings__UseEnvironmentVariables",
+    "value": "true"
+  },
+  {
+    "name": "RESOURCE_GROUP_NAME",
+    "value": "smx25dev-rg"
+  },
+  {
+    "name": "ConnectionStrings__DefaultConnection",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_corp_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__CorpDatabase",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_corp_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__HealthManagementDatabase",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_hm2_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__HealthProvidersDatabase",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_hp2_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__RxDatabase",
+    "value": "Server=tcp:rxdev-sqlsvr.database.windows.net,1433;Initial Catalog=rx_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "SMXCORE_CORP_DB_CONNECTION_STRING",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_corp_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "SMXCORE_CORE_DB_CONNECTION_STRING",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_core_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "SMXCORE_HEALTHPROVIDERS_DB_CONNECTION_STRING",
+    "value": "Server=tcp:smxcore-sqlsvr.database.windows.net,1433;Initial Catalog=smxcore_healthproviders_db;User Id=sqlAdminGroot;Password=IAmGroot!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "DataProtection__KeyVaultUri",
+    "value": "https://smx25dev-kv.vault.azure.net/"
+  },
+  {
+    "name": "DataProtection__BlobUri",
+    "value": "https://smx25devstorage.blob.core.windows.net/dataprotection/keys.xml"
+  },
+  {
+    "name": "DataProtection__KeyId",
+    "value": "https://smx25dev-kv.vault.azure.net/keys/dataprotection-keys"
+  },
+  {
+    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+    "value": "InstrumentationKey=71a1fd22-4fff-491d-9971-869fa4792aeb;IngestionEndpoint=https://eastus2-3.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus2.livediagnostics.monitor.azure.com/;ApplicationId=643bfcd0-b218-4a0c-bd93-7febc945aac6"
+  },
+  {
+    "name": "Branding__ApplicationName",
+    "value": "SMX Dev"
+  },
+  {
+    "name": "Branding__Version",
+    "value": "1.0"
+  },
+  {
+    "name": "Application__Branding__ApplicationName",
+    "value": "SMX Dev"
+  },
+  {
+    "name": "Application__Branding__Version",
+    "value": "0.1.0"
+  }
+]
