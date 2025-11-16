@@ -31,6 +31,7 @@
 - ✅ Application Insights connected
 - ✅ GitHub Actions deployment working
 - ✅ Custom domain configured
+- ✅ **Branding configured** (App name + version display)
 - ⚠️ Recently recovered from environment variable wipe (Nov 15, 2025)
 
 ---
@@ -114,7 +115,7 @@
 ## 📋 Environment Variables
 
 **Current Backup:** `env-vars-backup-20251116-033750.json`  
-**Total Variables:** 19
+**Total Variables:** 21 (19 original + 2 branding)
 
 **Key Variables Documented:**
 - EntraExternalId configuration
@@ -122,6 +123,8 @@
 - DataProtection settings
 - Application Insights
 - Communication Services
+- **Branding__ApplicationName** = "SMX Dev"
+- **Branding__Version** = "1.0"
 
 **⚠️ CRITICAL:** Always backup before changes using:
 ```powershell
@@ -134,7 +137,8 @@
 
 | Date | Action | Result | Notes |
 |------|--------|--------|-------|
-| Nov 16, 2025 | Environment variables backed up | ✅ Success | 19 vars backed up to prevent future loss |
+| Nov 16, 2025 03:40 | Added branding environment variables | ✅ Success | Issue #3: Added ApplicationName + Version display |
+| Nov 16, 2025 03:37 | Environment variables backed up | ✅ Success | 19 vars backed up to prevent future loss |
 | Nov 15, 2025 | Environment variables restored | ✅ Success | Recovered from accidental wipe |
 | Nov 15, 2025 | ⚠️ Environment variables wiped | ❌ Disaster | Claude agent used `--replace-env-vars` |
 | Aug 20, 2025 | Blob storage data protection deployed | ✅ Success | Build 77 |
