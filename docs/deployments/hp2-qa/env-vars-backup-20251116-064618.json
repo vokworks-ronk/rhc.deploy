@@ -1,0 +1,98 @@
+[
+  {
+    "name": "ASPNETCORE_ENVIRONMENT",
+    "value": "Production"
+  },
+  {
+    "name": "AzureAd__Instance",
+    "value": "https://rhcqa.ciamlogin.com/"
+  },
+  {
+    "name": "AzureAd__Domain",
+    "value": "rhcqa.onmicrosoft.com"
+  },
+  {
+    "name": "AzureAd__TenantId",
+    "value": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2"
+  },
+  {
+    "name": "AzureAd__ClientId",
+    "value": "cfdc3d4b-dfe3-4414-a09d-a11a568187de"
+  },
+  {
+    "name": "AzureAd__ClientSecret",
+    "value": "gLW8Q~Uq9pVrhX~SSwJTnmttY4Ij4L82Hf-EUcAx"
+  },
+  {
+    "name": "AzureAd__CallbackPath",
+    "value": "/signin-oidc"
+  },
+  {
+    "name": "EntraExternalId__Instance",
+    "value": "https://rhcqa.ciamlogin.com/"
+  },
+  {
+    "name": "EntraExternalId__Domain",
+    "value": "rhcqa.onmicrosoft.com"
+  },
+  {
+    "name": "EntraExternalId__TenantId",
+    "value": "2604fd9a-93a6-448e-bdc9-25e3c2d671a2"
+  },
+  {
+    "name": "EntraExternalId__ClientId",
+    "value": "cfdc3d4b-dfe3-4414-a09d-a11a568187de"
+  },
+  {
+    "name": "EntraExternalId__ClientSecret",
+    "value": "gLW8Q~Uq9pVrhX~SSwJTnmttY4Ij4L82Hf-EUcAx"
+  },
+  {
+    "name": "DatabaseServer",
+    "value": "rhcdb-qa-sqlsvr.database.windows.net"
+  },
+  {
+    "name": "DatabaseName",
+    "value": "qa_corp_db"
+  },
+  {
+    "name": "DatabaseNameHP2",
+    "value": "qa_hp2_db"
+  },
+  {
+    "name": "DatabaseTenantId",
+    "value": "4ed17c8b-26b0-4be9-a189-768c67fd03f5"
+  },
+  {
+    "name": "KeyVaultUri",
+    "value": "https://rhc-hp2-qa-kv-2025.vault.azure.net/"
+  },
+  {
+    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+    "value": "InstrumentationKey=2d95180d-9339-4103-b084-c20da27aa655;IngestionEndpoint=https://eastus2-3.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus2.livediagnostics.monitor.azure.com/"
+  },
+  {
+    "name": "ConnectionStrings__CorpDatabase",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__HealthProvidersDatabase",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_hp2_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "ConnectionStrings__DefaultConnection",
+    "value": "Server=tcp:rhcdb-qa-sqlsvr.database.windows.net,1433;Database=qa_corp_db;Authentication=Active Directory Service Principal;User ID=694db84f-ab2d-4410-b94e-92dbc8a24205;Password=hkp8Q~0CiXw.MQ-OGgPOY~YZ75u9gciwGRgzIccv;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  {
+    "name": "CommunicationServices__ConnectionString",
+    "value": "placeholder-will-update-after-chunk2"
+  },
+  {
+    "name": "CommunicationServices__FromAddress",
+    "value": "DoNotReply@7e8b48f2-52d5-4a16-87c1-cd0726b14e05.azurecomm.net"
+  },
+  {
+    "name": "CsysUserMgmt__Invitation__BaseUrl",
+    "value": "https://hp2-qa.recalibratex.net"
+  }
+]
