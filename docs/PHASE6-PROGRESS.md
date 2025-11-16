@@ -159,3 +159,21 @@
 - 🔑 Key Vault integration for service principal credentials
 - 📊 Environment variables configured
 - ✅ Application running: https://rhc-smx-qa-app.mangobay-bcba1c5a.eastus2.azurecontainerapps.io
+- 🔐 CIAM authentication configured and working
+
+## 🔐 Authentication Configuration (November 14, 2025)
+
+**Issue Resolved:** SMX QA authentication was initially misconfigured for Azure AD instead of CIAM.
+
+**Root Cause:**
+- QA tenant is **CIAM** (Customer Identity and Access Management) type
+- CIAM supports local accounts with email/password authentication
+- Application was configured with wrong endpoint: `login.microsoftonline.com`
+
+**Solution:**
+- Updated `AzureAd__Instance` to `https://rhcqa.ciamlogin.com/`
+- Added `AzureAd__CallbackPath` environment variable
+- Container App revision: `rhc-smx-qa-app--0000006`
+- Status: Authentication working ✅
+
+**See:** `docs/CIAM-AUTHENTICATION-FIX.md` for complete details and checklist.
